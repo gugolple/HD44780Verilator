@@ -34,7 +34,7 @@ ${PVTGTLib}: ${VERILOG_SRCS}
 ${TSRC_BIN}:
 	mkdir -p ${TSRC_BIN}
 
-${TSRC_TGT}: ${TSRC_BIN} ${MEMS_LOC}
+${TSRC_TGT}: ${TSRC_BIN} ${MEMS_LOC} ${PVTGTLib}
 	cd ${TSRC} && autoreconf -f -i && cd ../${TSRC_BIN} && ../configure && make -j `nproc`
 
 .PHONY: clean clean_cont
