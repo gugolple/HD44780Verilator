@@ -9,7 +9,7 @@ int main(int argc, char **argv, char **env)
         while (!top->rdy)
         {
                 if (top->clock)
-                        std::cout << "Wait initialization " std::endl;
+                        std::cout << "Wait initialization" << std::endl;
                 top->clock ^= 1;
                 top->eval();
         }
