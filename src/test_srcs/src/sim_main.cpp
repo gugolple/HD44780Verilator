@@ -1,9 +1,11 @@
 #include <iostream>
+#include <config.h>
 
 #include "Vhd44780.h"
 #include "verilated.h"
 int main(int argc, char **argv, char **env)
 {
+        std::cout << "Program running:" << PACKAGE_STRING << std::endl;
         Verilated::commandArgs(argc, argv);
         unsigned long long int cnt = 0;
         Vhd44780 *top = new Vhd44780;

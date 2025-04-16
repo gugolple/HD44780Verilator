@@ -1,29 +1,47 @@
 .PHONY: run
 
-VERILATOR_EXTRA_OPTS = --top-module hd44780 -Wno-INITIALDLY -Wno-UNUSED -Wno-UNDRIVEN 
+TGT = hd44780
+TTGT = T${TGT}
+
+COMPILATION_PATH = obj_dir
+PVTGTLib = ${COMPILATION_PATH}/${VTGTLib}
+
+VERILATOR_EXTRA_OPTS = --top-module ${TGT} -Wno-INITIALDLY -Wno-UNUSED -Wno-UNDRIVEN 
 PATH_SRC = fpga_gowin_hd44780/src
 VERILOG_SRCS = $(wildcard ${PATH_SRC}/*.v)
 MEMS = $(wildcard ${PATH_SRC}/*.mem)
-MEMS_LOC = $(notdir ${MEMS})
 
-%.mem: ${PATH_SRC}/%.mem 
+TSRC = test_srcs
+TSRC_BIN = ${TSRC}/bin
+TEST_TGT = vtesthd44780
+TSRC_TGT = ${TSRC_BIN}/${TEST_TGT}
+MEMS_LOC = $(patsubst %, ${TSRC_BIN}/%, $(notdir ${MEMS}))
+
+${TSRC_BIN}/%.mem: ${PATH_SRC}/%.mem 
 	cp $< $@
 
-all: obj_dir/Vhd44780
+all: ${PVTGTLib}
 
-run: obj_dir/Vhd44780
-	obj_dir/Vhd44780
+run: ${TSRC_TGT}
+	cd ${TSRC_BIN} && ./${TEST_TGT}
 
 test: run
 
-obj_dir/Vhd44780: ${VERILOG_SRCS} sim_main.cpp ${MEMS_LOC}
-	verilator -Wall --cc ${VERILOG_SRCS} --exe sim_main.cpp ${VERILATOR_EXTRA_OPTS}
-	make -C obj_dir -j -f Vhd44780.mk Vhd44780
+${PVTGTLib}: ${VERILOG_SRCS}
+	verilator -Wall --cc ${VERILOG_SRCS} ${VERILATOR_EXTRA_OPTS} -lib-create ${TTGT} 
+	make -C ${COMPILATION_PATH} -j -f Vhd44780.mk
+
+${TSRC_BIN}:
+	mkdir -p ${TSRC_BIN}
+
+${TSRC_TGT}: ${TSRC_BIN} ${MEMS_LOC}
+	cd ${TSRC} && autoreconf -f -i && cd ../${TSRC_BIN} && ../configure && make -j `nproc`
 
 .PHONY: clean clean_cont
 
 clean:
 	rm -rf obj_dir *.mem
+	rm -rvf ${TSRC_BIN}
 
 clean_cont:
 	rm .Dockerfile
