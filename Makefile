@@ -30,9 +30,9 @@ container-run-it: container
 	podman run ${PODMAN_ARGS} -it ${VER_POD_IMAGE}
 
 container-clean:
-	cd ${CONTAINER_DIR} ; make clean
-
-clean-build:
 	cd ${SRC_DIR} ; make clean
+
+clean-container:
+	cd ${CONTAINER_DIR} ; make clean
 
 clean-all: clean-container clean-build
