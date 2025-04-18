@@ -1,5 +1,5 @@
 export VER_POD_IMAGE = vertest
-export PODMAN_ARGS = --rm -v $(shell pwd)/src:/mnt
+export PODMAN_ARGS = --rm -v $(shell pwd):/mnt
 .PHONY: all run test container
 
 SRC_DIR=src
@@ -17,9 +17,13 @@ run:
 test: 
 	cd ${SRC_DIR} ; make test
 
+exec-%:
+	$(info "$(@:exec-%=%)")
+	cd src ; make "$(@:exec-%=%)"
+
 container-exec-%: container
 	$(info "$(@:container-exec-%=%)")
-	podman run ${PODMAN_ARGS} -t ${VER_POD_IMAGE} make "$(@:container-exec-%=%)" 
+	podman run ${PODMAN_ARGS} -t ${VER_POD_IMAGE} make "$(@:container-%=%)" 
 
 container-run-it: container
 	podman run ${PODMAN_ARGS} -it ${VER_POD_IMAGE}
