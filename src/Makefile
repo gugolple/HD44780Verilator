@@ -47,7 +47,7 @@ clean-verilator:
 	rm -rf obj_dir
 
 clean-srcs:
-	cd ${TSRC_BIN} ; make clean
+	cd ${TSRC_BIN} && make clean
 
 clean-srcs-force:
 	rm -rf ${TSRC_BIN}
