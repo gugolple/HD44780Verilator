@@ -17,20 +17,18 @@ run:
 test: 
 	cd ${SRC_DIR} ; make test
 
-container-all: container
-	podman run ${PODMAN_ARGS} -t ${VER_POD_IMAGE} make all
-
-container-run: container
-	podman run ${PODMAN_ARGS} -t ${VER_POD_IMAGE} make run
-
-container-test: container
-	podman test ${PODMAN_ARGS} -t ${VER_POD_IMAGE} make test
+container-exec-%: container
+	$(info "$(@:container-exec-%=%)")
+	podman run ${PODMAN_ARGS} -t ${VER_POD_IMAGE} make "$(@:container-exec-%=%)" 
 
 container-run-it: container
 	podman run ${PODMAN_ARGS} -it ${VER_POD_IMAGE}
 
 container-clean:
 	cd ${SRC_DIR} ; make clean
+
+container-clean-force:
+	cd ${SRC_DIR} ; make clean-force
 
 clean-container:
 	cd ${CONTAINER_DIR} ; make clean
