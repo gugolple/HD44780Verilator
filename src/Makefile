@@ -38,14 +38,24 @@ ${TSRC_MAKE}:
 	mkdir -p ${TSRC_BIN}
 	cd ${TSRC} && autoreconf -f -i && cd ../${TSRC_BIN} && ../configure
 
+.PHONY: ${TSRC_TGT}
 ${TSRC_TGT}: ${TSRC_MAKE} ${MEMS_LOC} ${PVTGTLib}
 	cd ${TSRC_BIN} && make -j `nproc`
 
 .PHONY: clean clean_cont
 
-clean:
-	rm -rf obj_dir *.mem
+clean-verilator:
+	rm -rf obj_dir
+
+clean-srcs:
 	cd ${TSRC_BIN} ; make clean
+
+clean-srcs-force:
+	rm -rf ${TSRC_BIN}
+
+clean: clean-verilator clean-srcs
+
+clean-force: clean-verilator clean-srcs-force
 
 clean_cont:
 	rm .Dockerfile
