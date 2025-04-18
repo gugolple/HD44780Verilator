@@ -18,8 +18,6 @@ TEST_TGT = vtesthd44780
 TSRC_TGT = ${TSRC_BIN}/${TEST_TGT}
 MEMS_LOC = $(patsubst %, ${TSRC_BIN}/%, $(notdir ${MEMS}))
 
-$(info $(TSRC_MAKE))
-
 ${TSRC_BIN}/%.mem: ${PATH_SRC}/%.mem 
 	cp $< $@
 
@@ -32,8 +30,9 @@ test: run
 
 ${PVTGTLib}: ${VERILOG_SRCS}
 	verilator -Wall --cc ${VERILOG_SRCS} ${VERILATOR_EXTRA_OPTS} -lib-create ${TTGT} 
-	make -C ${COMPILATION_PATH} -j -f Vhd44780.mk
+	make -C ${COMPILATION_PATH} -j -f V${TGT}.mk
 
+.PHONY: ${TSRC_MAKE}
 ${TSRC_MAKE}:
 	mkdir -p ${TSRC_BIN}
 	cd ${TSRC} && autoreconf -f -i && cd ../${TSRC_BIN} && ../configure
