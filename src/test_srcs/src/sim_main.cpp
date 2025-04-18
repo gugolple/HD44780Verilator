@@ -5,7 +5,8 @@
 #include "verilated.h"
 int main(int argc, char **argv, char **env)
 {
-        std::cout << "Program running:" << PACKAGE_STRING << std::endl;
+        std::cout << "Program running: " << PACKAGE_STRING << std::endl;
+        std::cout << "Program version: " << VERSION << std::endl;
         Verilated::commandArgs(argc, argv);
         unsigned long long int cnt = 0;
         Vhd44780 *top = new Vhd44780;
