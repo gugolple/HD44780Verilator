@@ -14,19 +14,33 @@ MEMS = $(wildcard ${PATH_SRC}/*.mem)
 TSRC = test_srcs
 TSRC_BIN = ${TSRC}/bin
 TSRC_MAKE = ${TSRC_BIN}/Makefile
-TEST_TGT = vtesthd44780 
+TEST_TGT = vtest${TGT}
 TSRC_TGT = ${TSRC_BIN}/${TEST_TGT}
 MEMS_LOC = $(patsubst %, ${TSRC_BIN}/%, $(notdir ${MEMS}))
 
-${TSRC_BIN}/%.mem: ${PATH_SRC}/%.mem 
-	cp $< $@
-
-all: ${PVTGTLib}
+all: ${PVTGTLib} ${TSRC_TGT}
 
 run: ${TSRC_TGT}
 	cd ${TSRC_BIN} ; ./${TEST_TGT}
 
 test: run
+
+.PHONY: clean
+clean-verilator:
+	rm -rf obj_dir
+
+clean-srcs:
+	cd ${TSRC_BIN} && make clean
+
+clean-srcs-force:
+	rm -rf ${TSRC_BIN}
+
+clean: clean-verilator clean-srcs
+
+clean-force: clean-verilator clean-srcs-force
+
+${TSRC_BIN}/%.mem: ${PATH_SRC}/%.mem 
+	cp $< $@
 
 ${PVTGTLib}: ${VERILOG_SRCS}
 	verilator -Wall --cc ${VERILOG_SRCS} ${VERILATOR_EXTRA_OPTS} -lib-create ${TTGT} 
@@ -41,20 +55,3 @@ ${TSRC_MAKE}:
 ${TSRC_TGT}: ${TSRC_MAKE} ${MEMS_LOC} ${PVTGTLib}
 	cd ${TSRC_BIN} && make -j `nproc`
 
-.PHONY: clean clean_cont
-
-clean-verilator:
-	rm -rf obj_dir
-
-clean-srcs:
-	cd ${TSRC_BIN} && make clean
-
-clean-srcs-force:
-	rm -rf ${TSRC_BIN}
-
-clean: clean-verilator clean-srcs
-
-clean-force: clean-verilator clean-srcs-force
-
-clean_cont:
-	rm .Dockerfile
