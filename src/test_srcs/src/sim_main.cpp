@@ -1,6 +1,7 @@
 #include <iostream>
 #include <config.h>
 #include <sstream>
+#include <bitset>
 
 #include "Vhd44780.h"
 #include "verilated.h"
@@ -27,7 +28,8 @@ class test_hd44780 {
             ss << " Busy: " << (unsigned int)hd44780.busy;
             ss << " E: " << (unsigned int)hd44780.e;
             ss << " RS: " << (unsigned int)hd44780.rs;
-            ss << " DB: " << (unsigned int)hd44780.db;
+            ss << " DB (h): " << std::hex << (unsigned int)hd44780.db;
+            ss << " DB (b): " << std::bitset<4>((unsigned int)hd44780.db);
             return ss.str();
         }
 
@@ -39,31 +41,60 @@ class test_hd44780 {
             hd44780.eval();
         }
 
-        void nextHCycle(const unsigned int cycles) {
+        void nextNHalfCycles(const unsigned int cycles) {
             for(unsigned int i=0; i<cycles; i++) {
                 nextHalfCycle();
             }
         }
 
         void nextCycle() {
-            nextHCycle(2);
+            nextNHalfCycles(2);
         }
 
         bool changeEnable() {
-            return le ^ hd44780.e;
+            return (le ^ hd44780.e);
+        }
+
+        bool transitionEnableHigh() {
+            return changeEnable() & hd44780.e;
         }
 
         void setReset(unsigned char reset) {
             hd44780.rst = reset;
         }
 
-        unsigned char busy() {
-            return hd44780.busy;
-        }
-
         unsigned long long getCycles() {
             return cycle;
         }
+
+        unsigned char getrst() {
+            return hd44780.rst;
+        }
+
+        unsigned char getclk() {
+            return hd44780.clk;
+        }
+
+        unsigned char gettrg() {
+            return hd44780.trg;
+        }
+
+        unsigned char getbusy() {
+            return hd44780.busy;
+        }
+
+        unsigned char gete() {
+            return hd44780.e;
+        }
+
+        unsigned char getrs() {
+            return hd44780.rs;
+        }
+
+        unsigned char getdb() {
+            return hd44780.db;
+        }
+
 
     private:
         Vhd44780 hd44780;
@@ -88,14 +119,14 @@ int main(int argc, char **argv, char **env)
     std::cout << hd.to_string() << std::endl;
     for (int i=0; i<100; i++) {
         hd.nextHalfCycle();
-        if (hd.changeEnable()) {
+        if (hd.transitionEnableHigh()) {
             std::cout << hd.to_string() << std::endl;
         }
     }
-    hd.setReset(1);
-    while(hd.busy()) {
+    hd.setReset(1); // Reset is active low on the FPGA model
+    while(hd.getbusy()) {
         hd.nextHalfCycle();
-        if (hd.changeEnable()) {
+        if (hd.transitionEnableHigh()) {
             std::cout << hd.to_string() << std::endl;
         }
     }
