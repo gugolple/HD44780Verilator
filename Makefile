@@ -25,7 +25,7 @@ container-exec-%: container
 	$(info "$(@:container-exec-%=%)")
 	podman run ${PODMAN_ARGS} -t ${VER_POD_IMAGE} make "$(@:container-%=%)" 
 
-container-run-it: container
+container-it: container
 	podman run ${PODMAN_ARGS} -it ${VER_POD_IMAGE}
 
 container-clean:
