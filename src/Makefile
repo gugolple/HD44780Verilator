@@ -13,15 +13,23 @@ MEMS = $(wildcard ${PATH_SRC}/*.mem)
 
 TSRC = test_srcs
 TSRC_BIN = ${TSRC}/bin
+TSRC_DBIN = ${TSRC}/dbin
 TSRC_MAKE = ${TSRC_BIN}/Makefile
+TSRC_DMAKE = ${TSRC_DBIN}/Makefile
 TEST_TGT = vtest${TGT}
 TSRC_TGT = ${TSRC_BIN}/${TEST_TGT}
+TSRC_DTGT = ${TSRC_DBIN}/${TEST_TGT}
+
 MEMS_LOC = $(patsubst %, ${TSRC_BIN}/%, $(notdir ${MEMS}))
+MEMS_DLOC = $(patsubst %, ${TSRC_DBIN}/%, $(notdir ${MEMS}))
 
 all: ${PVTGTLib} ${TSRC_TGT}
 
 run: ${TSRC_TGT}
 	cd ${TSRC_BIN} ; ./${TEST_TGT}
+
+run-dbg: ${TSRC_DTGT}
+	cd ${TSRC_DBIN} ; gdb ${TEST_TGT}
 
 test: run
 
@@ -42,6 +50,9 @@ clean-force: clean-verilator clean-srcs-force
 ${TSRC_BIN}/%.mem: ${PATH_SRC}/%.mem 
 	cp $< $@
 
+${TSRC_DBIN}/%.mem: ${PATH_SRC}/%.mem 
+	cp $< $@
+
 ${PVTGTLib}: ${VERILOG_SRCS}
 	verilator -Wall --cc ${VERILOG_SRCS} ${VERILATOR_EXTRA_OPTS} -lib-create ${TTGT} 
 	make -C ${COMPILATION_PATH} -j -f V${TGT}.mk
@@ -54,4 +65,13 @@ ${TSRC_MAKE}:
 .PHONY: ${TSRC_TGT}
 ${TSRC_TGT}: ${TSRC_MAKE} ${MEMS_LOC} ${PVTGTLib}
 	cd ${TSRC_BIN} && make -j `nproc`
+
+.PHONY: ${TSRC_DMAKE}
+${TSRC_DMAKE}:
+	mkdir -p ${TSRC_DBIN}
+	cd ${TSRC} && autoreconf -f -i && cd ../${TSRC_DBIN} && ../configure --enable-debug
+
+.PHONY: ${TSRC_DTGT}
+${TSRC_DTGT}: ${TSRC_DMAKE} ${MEMS_DLOC} ${PVTGTLib}
+	cd ${TSRC_DBIN} && make -j `nproc`
 
