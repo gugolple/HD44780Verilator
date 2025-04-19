@@ -1,4 +1,4 @@
-export VER_POD_IMAGE = vertest
+export VER_POD_IMAGE = vertesthd44780
 export PODMAN_ARGS = --rm -v $(shell pwd):/mnt
 .PHONY: all run test container
 
