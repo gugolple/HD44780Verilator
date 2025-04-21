@@ -6,6 +6,9 @@
 #ifndef HD44780_HPP
 #include "hd44780.hpp"
 #endif
+#ifndef HD44780GENERAL_HPP
+#include "hd44780general.hpp"
+#endif 
 
 
 int main(int argc, char **argv, char **env)
@@ -32,5 +35,8 @@ int main(int argc, char **argv, char **env)
         }
     }
     std::cout << "Cycle count: " << hd.getCycles() << std::endl;
+
+    std::cout << "Printout of the known good reset sequence" << std::endl;
+    reset_sequence();
     exit(0);
 }

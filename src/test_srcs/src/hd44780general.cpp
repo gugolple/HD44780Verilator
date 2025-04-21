@@ -3,7 +3,7 @@
 #endif 
 #include <sstream>
 #include <bitset>
-#include <stdio.h>
+#include <iostream>
 
 #define ARRAY_SIZE(a) (sizeof(a)/sizeof(a[0]))
 
@@ -55,47 +55,47 @@ int valPos(int pos, int vals) {
  */
 #if HD44780_CONFIG_DL_DATA_LENGTH == 1
 class hd44780payload {
-public:
-    hd44780payload(int payload, bool rss) { bits = payload; rs = rss;}
-    int getbits(){ return bits; }
-    int getrs(){ return rs; }
-private:
-    bool rs;
-    int bits;
+    public:
+        hd44780payload(int payload, bool rss) { bits = payload; rs = rss;}
+        int getbits(){ return bits; }
+        int getrs(){ return rs; }
+    private:
+        bool rs;
+        int bits;
 };
 
 #elif HD44780_CONFIG_DL_DATA_LENGTH == 0
 class hd44780payload {
-public:
-    hd44780payload(int payload, bool rss) {
-        onlyhigh = false;
-        rs = rss;
-        highbits = get_high_4bits(payload);
-        lowbits = get_low_4bits(payload);
-    }
-    hd44780payload(int payload, bool rss, bool oh) {
-        onlyhigh = oh;
-        rs = rss;
-        highbits = get_high_4bits(payload);
-        lowbits = get_low_4bits(payload);
-    }
-    int getrs(){ return rs; }
-    int gethighbits(){ return highbits; }
-    int getlowbits(){ return lowbits; }
-    std::string to_string() {
-        std::stringstream ss;
-        ss << "HighBits: " << std::bitset<4>((unsigned int)highbits);
-        ss << " LowBits: " << std::bitset<4>((unsigned int)lowbits);
-        ss << " RS: " << (unsigned int)rs;
-        ss << " OnlyH: " << (unsigned int)onlyhigh;
-        return ss.str();
-    }
+    public:
+        hd44780payload(int payload, bool rss) {
+            onlyhigh = false;
+            rs = rss;
+            highbits = get_high_4bits(payload);
+            lowbits = get_low_4bits(payload);
+        }
+        hd44780payload(int payload, bool rss, bool oh) {
+            onlyhigh = oh;
+            rs = rss;
+            highbits = get_high_4bits(payload);
+            lowbits = get_low_4bits(payload);
+        }
+        int getrs(){ return rs; }
+        int gethighbits(){ return highbits; }
+        int getlowbits(){ return lowbits; }
+        std::string to_string() {
+            std::stringstream ss;
+            ss << "HighBits: " << std::bitset<4>((unsigned int)highbits);
+            ss << " LowBits: " << std::bitset<4>((unsigned int)lowbits);
+            ss << " RS: " << (unsigned int)rs;
+            ss << " OnlyH: " << (unsigned int)onlyhigh;
+            return ss.str();
+        }
 
-private:
-    bool rs;
-    bool onlyhigh;
-    int highbits;
-    int lowbits;
+    private:
+        bool rs;
+        bool onlyhigh;
+        int highbits;
+        int lowbits;
 };
 #endif
 
@@ -222,7 +222,7 @@ hd44780payload hd44780_inst_function_set_half() {
         HD44780_CONFIG_N_DISPLAY_LINES << 3 |
         HD44780_CONFIG_F_CHARACTER_FONT << 2
         ;
-    return hd44780payload(val, true);
+    return hd44780payload(val, false, true);
 }
 
 hd44780payload hd44780_inst_function_set() {
@@ -286,15 +286,15 @@ void reset_sequence() {
     //vTaskDelayUntil( , hd44780_POWERON_DELAY_MS );
     // Instruction to archieve the correct initialization
 #if HD44780_CONFIG_DL_DATA_LENGTH == 0
-    hd44780_inst_function_set_half();
+    std::cout << hd44780_inst_function_set_half().to_string() << std::endl;
     //vTaskDelayUntil( , hd44780_INST_CLEAR_DISPLAY_MS );
 #endif
-    hd44780_inst_function_set();
+    std::cout << hd44780_inst_function_set().to_string() << std::endl;
     //vTaskDelayUntil( , hd44780_INST_CLEAR_DISPLAY_MS );
-    hd44780_inst_display_clear();
-    hd44780_inst_display_control(1, 1, 0);
-    hd44780_inst_entry_mode_set(1,0);
+    std::cout << hd44780_inst_display_clear().to_string() << std::endl;
+    std::cout << hd44780_inst_display_control(1, 1, 0).to_string() << std::endl;
+    std::cout << hd44780_inst_entry_mode_set(1,0).to_string() << std::endl;
 
     // Set start point
-    hd44780_inst_set_ddram_address(HD44780_START_ADD_L4);
+    std::cout << hd44780_inst_set_ddram_address(HD44780_START_ADD_L4).to_string() << std::endl;
 }

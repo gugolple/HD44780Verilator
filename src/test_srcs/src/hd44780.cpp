@@ -8,8 +8,6 @@
 #include <sstream>
 #include <bitset>
 
-#include <stdio.h>
-
 
 // Class functions
 test_hd44780::test_hd44780(VerilatedContext& vc) : hd44780(Vhd44780{&vc}) {

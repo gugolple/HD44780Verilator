@@ -29,3 +29,4 @@
 #define HD44780_START_ADD_L3          (0x10) 
 #define HD44780_START_ADD_L4          (0x50)
 
+void reset_sequence();
