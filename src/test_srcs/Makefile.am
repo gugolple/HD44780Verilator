@@ -20,8 +20,8 @@ vtesthd44780_LDADD = \
 	$(srcdir)/../obj_dir/libThd44780.a
 
 vtesthd44780_SOURCES = \
-	src/sim_main.cpp \
-	src/hd44780.cpp \
-	src/hd44780general.cpp
+	$(srcdir)/src/sim_main.cpp \
+	$(srcdir)/src/hd44780.cpp \
+	$(srcdir)/src/hd44780general.cpp
 
 dist_doc_DATA = README
