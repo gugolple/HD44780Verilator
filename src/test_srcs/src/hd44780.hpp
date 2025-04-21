@@ -1,3 +1,4 @@
+#define HD44780_HPP
 #include "Vhd44780.h"
 #include "verilated.h"
 class test_hd44780 {

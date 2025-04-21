@@ -3,7 +3,9 @@
 
 #include "Vhd44780.h"
 #include "verilated.h"
+#ifndef HD44780_HPP
 #include "hd44780.hpp"
+#endif
 
 
 int main(int argc, char **argv, char **env)
