@@ -152,8 +152,6 @@ hd44780payload hd44780_inst_return_home() {
     //vTaskDelayUntil( , hd44780_INST_CLEAR_DISPLAY_MS );
 }
 
-#define HD44780_CONFIG_ID_INCREMENT_DIRECTION 1 // 1 - Right | 0 - Left
-#define HD44780_CONFIG_SHIFT_CURSOR 1 // 0 off | 1 on 
 hd44780payload hd44780_inst_entry_mode_set(const int id, const int s) {
     // Per instructions:
     // - DB7: 0
@@ -301,8 +299,17 @@ void reset_sequence() {
     std::cout << hd44780_inst_function_set().to_string() << std::endl;
     //vTaskDelayUntil( , hd44780_INST_CLEAR_DISPLAY_MS );
     std::cout << hd44780_inst_display_clear().to_string() << std::endl;
-    std::cout << hd44780_inst_display_control(1, 1, 0).to_string() << std::endl;
-    std::cout << hd44780_inst_entry_mode_set(1,0).to_string() << std::endl;
+    std::cout << hd44780_inst_display_control(
+            HD44780_CONFIG_D_DISPLAY_ONOFF,
+            HD44780_CONFIG_C_CURSOR_ONOFF,
+            HD44780_CONFIG_C_CURSOR_BLINK
+            ).to_string() 
+        << std::endl;
+    std::cout << hd44780_inst_entry_mode_set(
+            HD44780_CONFIG_ID_INCREMENT_DIRECTION,
+            HD44780_CONFIG_SHIFT_CURSOR
+            ).to_string()
+        << std::endl;
 
     // Set start point
     std::cout << "Print all starting points" << std::endl;
