@@ -5,13 +5,13 @@
 #define HD44780_CONFIG_F_CHARACTER_FONT 0 
 
 // Display configuration
-#define HD44780_CONFIG_D_DISPLAY_ONOFF 1 // 0 - Off | 1 - On
-#define HD44780_CONFIG_C_CURSOR_ONOFF 1 // 0 - Off | 1 - On
-#define HD44780_CONFIG_C_CURSOR_BLINK 0 // 0 - Off | 1 - On
+#define HD44780_CONFIG_D_DISPLAY_ONOFF  1 // 0 - Off | 1 - On
+#define HD44780_CONFIG_C_CURSOR_ONOFF   1 // 0 - Off | 1 - On
+#define HD44780_CONFIG_C_CURSOR_BLINK   0 // 0 - Off | 1 - On
 
 // Display cursor configuration
 #define HD44780_CONFIG_ID_INCREMENT_DIRECTION 1 // 0 - Left | 1 - Right
-#define HD44780_CONFIG_SHIFT_CURSOR 1 // 0 Off | 1 on 
+#define HD44780_CONFIG_SHIFT_CURSOR           1 // 0 Off | 1 on 
 
 // Macro definition checks
 // HD44780_CONFIG_N_DISPLAY_LINES
