@@ -99,13 +99,22 @@ class hd44780payload {
 };
 #endif
 
+hd44780payload hd44780_send_payload(const int v, bool rs, bool oh) {
+    return hd44780payload(v, rs, oh);
+}
+
 hd44780payload hd44780_send_payload(const int v, bool rs) {
-    return hd44780payload(v, rs);
+    return hd44780_send_payload(v, rs, false);
 }
 
 hd44780payload hd44780_send_instruction(const int v) {
     //gpio_put( HD44780_PINS_RS, 0 );
     return hd44780_send_payload(v, false);
+}
+
+hd44780payload hd44780_send_instruction_onlyhigh(const int v) {
+    //gpio_put( HD44780_PINS_RS, 0 );
+    return hd44780_send_payload(v, false, true);
 }
 
 hd44780payload hd44780_send_data_payload(const int v) {
@@ -222,7 +231,7 @@ hd44780payload hd44780_inst_function_set_half() {
         HD44780_CONFIG_N_DISPLAY_LINES << 3 |
         HD44780_CONFIG_F_CHARACTER_FONT << 2
         ;
-    return hd44780payload(val, false, true);
+    return hd44780_send_instruction_onlyhigh(val);
 }
 
 hd44780payload hd44780_inst_function_set() {
