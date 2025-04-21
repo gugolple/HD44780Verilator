@@ -108,17 +108,14 @@ hd44780payload hd44780_send_payload(const int v, bool rs) {
 }
 
 hd44780payload hd44780_send_instruction(const int v) {
-    //gpio_put( HD44780_PINS_RS, 0 );
     return hd44780_send_payload(v, false);
 }
 
 hd44780payload hd44780_send_instruction_onlyhigh(const int v) {
-    //gpio_put( HD44780_PINS_RS, 0 );
     return hd44780_send_payload(v, false, true);
 }
 
 hd44780payload hd44780_send_data_payload(const int v) {
-    //gpio_put( HD44780_PINS_RS, 1 );
     return hd44780_send_payload(v, true);
 }
 
@@ -169,7 +166,8 @@ hd44780payload hd44780_inst_entry_mode_set(const int id, const int s) {
     return hd44780_send_instruction(val);
 }
 
-hd44780payload hd44780_inst_display_control(const int d, const int c, const int b) {
+hd44780payload hd44780_inst_display_control(const int d, const int c,
+        const int b) {
     // Per instructions:
     // - DB7: 0
     // - DB6: 0
@@ -313,8 +311,12 @@ void reset_sequence() {
 
     // Set start point
     std::cout << "Print all starting points" << std::endl;
-    std::cout << hd44780_inst_set_ddram_address(HD44780_START_ADD_L1).to_string() << std::endl;
-    std::cout << hd44780_inst_set_ddram_address(HD44780_START_ADD_L2).to_string() << std::endl;
-    std::cout << hd44780_inst_set_ddram_address(HD44780_START_ADD_L3).to_string() << std::endl;
-    std::cout << hd44780_inst_set_ddram_address(HD44780_START_ADD_L4).to_string() << std::endl;
+    std::cout << hd44780_inst_set_ddram_address(HD44780_START_ADD_L1).to_string() 
+        << std::endl;
+    std::cout << hd44780_inst_set_ddram_address(HD44780_START_ADD_L2).to_string() 
+        << std::endl;
+    std::cout << hd44780_inst_set_ddram_address(HD44780_START_ADD_L3).to_string() 
+        << std::endl;
+    std::cout << hd44780_inst_set_ddram_address(HD44780_START_ADD_L4).to_string() 
+        << std::endl;
 }
