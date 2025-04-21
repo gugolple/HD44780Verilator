@@ -296,5 +296,9 @@ void reset_sequence() {
     std::cout << hd44780_inst_entry_mode_set(1,0).to_string() << std::endl;
 
     // Set start point
+    std::cout << "Print all starting points" << std::endl;
+    std::cout << hd44780_inst_set_ddram_address(HD44780_START_ADD_L1).to_string() << std::endl;
+    std::cout << hd44780_inst_set_ddram_address(HD44780_START_ADD_L2).to_string() << std::endl;
+    std::cout << hd44780_inst_set_ddram_address(HD44780_START_ADD_L3).to_string() << std::endl;
     std::cout << hd44780_inst_set_ddram_address(HD44780_START_ADD_L4).to_string() << std::endl;
 }
