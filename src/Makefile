@@ -16,22 +16,29 @@ TSRC_BIN = ${TSRC}/bin
 TSRC_DBIN = ${TSRC}/dbin
 TSRC_MAKE = ${TSRC_BIN}/Makefile
 TSRC_DMAKE = ${TSRC_DBIN}/Makefile
-TEST_TGT = vtest${TGT}
+RUN_TGT = vtesthd44780
+TRUN_TGT = ${TSRC_BIN}/${RUN_TGT}
+TRUN_DTGT = ${TSRC_DBIN}/${RUN_TGT}
+TEST_TGT = testmain
 TSRC_TGT = ${TSRC_BIN}/${TEST_TGT}
 TSRC_DTGT = ${TSRC_DBIN}/${TEST_TGT}
 
 MEMS_LOC = $(patsubst %, ${TSRC_BIN}/%, $(notdir ${MEMS}))
 MEMS_DLOC = $(patsubst %, ${TSRC_DBIN}/%, $(notdir ${MEMS}))
 
-all: ${PVTGTLib} ${TSRC_TGT}
+all: ${PVTGTLib} ${RUN_TGT}
 
-run: ${TSRC_TGT}
-	cd ${TSRC_BIN} ; ./${TEST_TGT}
+run: ${TRUN_TGT}
+	cd ${TSRC_BIN} ; ./${RUN_TGT}
 
 run-dbg: ${TSRC_DTGT}
-	cd ${TSRC_DBIN} ; gdb ${TEST_TGT}
+	cd ${TSRC_DBIN} ; gdb ${RUN_TGT}
 
-test: run
+test: ${TSRC_TGT}
+	cd ${TSRC_BIN} ; ./${TEST_TGT}
+
+test-dbg: ${TSRC_DTGT}
+	cd ${TSRC_DBIN} ; gdb ${TEST_TGT}
 
 .PHONY: clean
 clean-verilator:
@@ -75,3 +82,6 @@ ${TSRC_DMAKE}:
 ${TSRC_DTGT}: ${TSRC_DMAKE} ${MEMS_DLOC} ${PVTGTLib}
 	cd ${TSRC_DBIN} && make -j `nproc`
 
+.PHONY: ${TRUN_TGT} ${TRUN_DTGT}
+TRUN_TGT: ${TSRC_TGT}
+TRUN_DTGT: ${TSRC_DTGT}
