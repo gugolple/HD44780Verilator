@@ -3,10 +3,10 @@
 	url = ssh://git@192.168.0.3:3022/gugo_gowin/fpga_gowin_hd44780.git
     ignore = dirty
 [submodule "Catch2"]
-	path = Catch2
+	path = container/Catch2
 	url = https://github.com/catchorg/Catch2.git
     ignore = dirty
 [submodule "verilator"]
-	path = verilator
+	path = container/verilator
 	url = https://github.com/verilator/verilator
     ignore = dirty

@@ -49,4 +49,5 @@ verilatortgt: /usr/local/share/verilator/include/verilated.h
 
 catch2tgt: /usr/local/lib/libCatch2.a
 
-deps: verilatortgt catch2tgt
+deps:
+	cd container && make deps
