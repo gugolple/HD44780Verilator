@@ -24,10 +24,13 @@ libgen_a_SOURCES = \
 	$(srcdir)/src/TestFrameWork.cpp \
 	$(srcdir)/src/TestFrameWorkHD44780.cpp
 
-libgen_a_CPPFLAGS = \
+LIBGENFLAGS = \
 	-Wno-sign-compare \
 	-Wno-unused-parameter \
 	$(INCLUDE_DIRS)
+
+libgen_a_CPPFLAGS = \
+	$(LIBGENFLAGS)
 
 # Targets to be built
 bin_PROGRAMS = vtesthd44780 testmain
@@ -37,7 +40,7 @@ bin_PROGRAMS = vtesthd44780 testmain
 # Expected for more interactive operations
 ################################################################################
 vtesthd44780_CPPFLAGS = \
-	$(INCLUDE_DIRS)
+	$(LIBGENFLAGS)
 
 vtesthd44780_LDADD = \
 	$(srcdir)/../obj_dir/libThd44780.a \
@@ -54,7 +57,7 @@ catch2LDADD = \
 	-lCatch2
 
 testmain_CPPFLAGS = \
-	$(INCLUDE_DIRS)
+	$(LIBGENFLAGS)
 
 testmain_LDADD = \
 	$(srcdir)/../obj_dir/libThd44780.a \
