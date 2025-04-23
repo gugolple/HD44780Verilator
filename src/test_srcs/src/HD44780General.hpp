@@ -1,3 +1,4 @@
+#ifndef HD44780GENERAL_HPP
 #define HD44780GENERAL_HPP
 // Hardware configuration of unit
 #define HD44780_CONFIG_DL_DATA_LENGTH   0 //0 - 4 | 1 - 8 //Bits for comm
@@ -39,3 +40,4 @@
 #define HD44780_START_ADD_L4          (0x50)
 
 void reset_sequence();
+#endif

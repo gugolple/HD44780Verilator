@@ -1,9 +1,10 @@
+#ifndef HD44780_HPP
 #define HD44780_HPP
 #include "Vhd44780.h"
 #include "verilated.h"
-class test_hd44780 {
+class WrapHD44780 {
     public:
-        test_hd44780(VerilatedContext& vc);
+        WrapHD44780(VerilatedContext& vc);
         std::string to_string(); 
         void nextHalfCycle();
         void nextNHalfCycles(const unsigned int cycles);
@@ -28,3 +29,4 @@ class test_hd44780 {
 
         void syncVariables();
 };
+#endif

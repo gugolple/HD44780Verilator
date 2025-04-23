@@ -1,5 +1,5 @@
 #ifndef HD44780GENERAL_HPP
-#include "hd44780general.hpp"
+#include "HD44780General.hpp"
 #endif 
 #include <sstream>
 #include <bitset>
