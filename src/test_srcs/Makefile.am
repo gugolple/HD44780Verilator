@@ -11,6 +11,10 @@ INCLUDE_DIRS = \
 	-I/usr/share/verilator/include/ \
 	-I/usr/local/share/verilator/include/
 
+################################################################################
+# Lib target 
+# Made so we dont need to recompile the shared files
+################################################################################
 # General block of code to be shared for all targets
 noinst_LIBRARIES = libgen.a
 
@@ -25,28 +29,35 @@ libgen_a_CPPFLAGS = \
 	-Wno-unused-parameter \
 	$(INCLUDE_DIRS)
 
-libgen_a_LIBADD = \
-	$(srcdir)/../obj_dir/libThd44780.a
-
 # Targets to be built
 bin_PROGRAMS = vtesthd44780 testmain
 
+################################################################################
+# Default run target
+# Expected for more interactive operations
+################################################################################
 vtesthd44780_CPPFLAGS = \
-	-Wno-sign-compare \
-	-Wno-unused-parameter \
 	$(INCLUDE_DIRS)
 
 vtesthd44780_LDADD = \
+	$(srcdir)/../obj_dir/libThd44780.a \
 	libgen.a
 
 vtesthd44780_SOURCES = \
 	$(srcdir)/src/sim_main.cpp
 
+################################################################################
+# Unit test target 
+################################################################################
 catch2LDADD = \
 	-lCatch2Main \
 	-lCatch2
 
+testmain_CPPFLAGS = \
+	$(INCLUDE_DIRS)
+
 testmain_LDADD = \
+	$(srcdir)/../obj_dir/libThd44780.a \
 	$(catch2LDADD) \
 	libgen.a
 
