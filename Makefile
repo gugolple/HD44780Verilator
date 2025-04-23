@@ -38,3 +38,15 @@ clean-container:
 	cd ${CONTAINER_DIR} ; make clean
 
 clean-all: clean-container clean-build
+
+/usr/local/share/verilator/include/verilated.h:
+	unset VERILATOR_ROOT && cd verilator && autoconf && ./configure && make -j `nproc` && make install 
+
+verilatortgt: /usr/local/share/verilator/include/verilated.h
+
+/usr/local/lib/libCatch2.a:
+	cd Catch2 && cmake -S . -B build && cd build && make -j`nproc` && make install
+
+catch2tgt: /usr/local/lib/libCatch2.a
+
+deps: verilatortgt catch2tgt
