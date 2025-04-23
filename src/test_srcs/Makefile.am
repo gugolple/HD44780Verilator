@@ -25,6 +25,9 @@ libgen_a_CPPFLAGS = \
 	-Wno-unused-parameter \
 	$(INCLUDE_DIRS)
 
+libgen_a_LIBADD = \
+	$(srcdir)/../obj_dir/libThd44780.a
+
 # Targets to be built
 bin_PROGRAMS = vtesthd44780 testmain
 
@@ -34,7 +37,6 @@ vtesthd44780_CPPFLAGS = \
 	$(INCLUDE_DIRS)
 
 vtesthd44780_LDADD = \
-	$(srcdir)/../obj_dir/libThd44780.a \
 	libgen.a
 
 vtesthd44780_SOURCES = \
@@ -45,7 +47,8 @@ catch2LDADD = \
 	-lCatch2
 
 testmain_LDADD = \
-	$(catch2LDADD)
+	$(catch2LDADD) \
+	libgen.a
 
 testmain_SOURCES = \
 	$(srcdir)/src/testmain.cpp

@@ -69,19 +69,16 @@ ${TSRC_MAKE}:
 	mkdir -p ${TSRC_BIN}
 	cd ${TSRC} && autoreconf -f -i && cd ../${TSRC_BIN} && ../configure
 
-.PHONY: ${TSRC_TGT}
 ${TSRC_TGT}: ${TSRC_MAKE} ${MEMS_LOC} ${PVTGTLib}
 	cd ${TSRC_BIN} && make -j `nproc`
 
-.PHONY: ${TSRC_DMAKE}
 ${TSRC_DMAKE}:
 	mkdir -p ${TSRC_DBIN}
 	cd ${TSRC} && autoreconf -f -i && cd ../${TSRC_DBIN} && ../configure --enable-debug
 
-.PHONY: ${TSRC_DTGT}
 ${TSRC_DTGT}: ${TSRC_DMAKE} ${MEMS_DLOC} ${PVTGTLib}
 	cd ${TSRC_DBIN} && make -j `nproc`
 
-.PHONY: ${TRUN_TGT} ${TRUN_DTGT}
-TRUN_TGT: ${TSRC_TGT}
-TRUN_DTGT: ${TSRC_DTGT}
+${TRUN_TGT}: ${TSRC_TGT}
+
+${TRUN_DTGT}: ${TSRC_DTGT}
