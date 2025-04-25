@@ -89,9 +89,10 @@ constexpr unsigned long long convertNanoSecondsToHalfCycleCount(unsigned long lo
 }
 
 void printState(WrapHD44780 const &hd, HD44780State const &initial, HD44780State const &cur) {
-    std::cout << "At cycle: " << hd.getCycles() << " at hcycle: " << hd.getHCycles() << std::endl;
-    std::cout << "Initial: " << initial.to_string() << std::endl;
-    std::cout << "Current: " << cur.to_string() << std::endl;
+     FAIL( "Failure to maintain " << "at cycle: " << hd.getCycles() 
+     << " at hcycle: " << hd.getHCycles() << "\n"
+     << "Initial: " << initial.to_string() << "\n"
+     << "Current: " << cur.to_string() << "\n" );
 }
 
 void maintainStateHalfs(WrapHD44780 &hd, const int hcycles, HD44780State &initial) {
@@ -106,7 +107,7 @@ void maintainStateHalfs(WrapHD44780 &hd, const int hcycles, HD44780State &initia
     }
 }
 
-void maintainState(WrapHD44780 &hd, const int cycles, HD44780State &initial) {
+void maintainStateCycles(WrapHD44780 &hd, const int cycles, HD44780State &initial) {
     for (int i=0; i<cycles; i++) {
         hd.nextCycle();
         HD44780State cur = hd.getState();
@@ -121,9 +122,9 @@ void maintainState(WrapHD44780 &hd, const int cycles, HD44780State &initial) {
 void waitUntilCommandSent(WrapHD44780 &hd) {
     // E pin known to be high with the loop
     while (!hd.gete()) {hd.nextHalfCycle();};
-    std::cout << "E is high at " << hd.getCycles() << std::endl;
+    INFO( "E is high at " << hd.getCycles() << "\n" );
     while (hd.gete()) {hd.nextHalfCycle();};
-    std::cout << "E is low at " << hd.getCycles() << std::endl;
+    INFO( "E is low at " << hd.getCycles() << "\n" );
 }
 
 void waitUntilChange(WrapHD44780 &hd, HD44780State &initial) {
@@ -139,8 +140,9 @@ void resetSequence(WrapHD44780 &hd) {
     hd.settrg(0);
     hd.nextHalfCycle();
     HD44780State old = hd.getState();
-    // Due to doing each edge, 100 cycles
-    maintainState(hd, 100*2, old);
+    // Arbitrary value, just an amount greater than 1 cycle to give the system
+    // an opportunity
+    maintainStateCycles(hd, 100, old);
     hd.setrst(1);
 }
 
@@ -161,7 +163,7 @@ TEST_CASE("Initialization of HD44780") {
 
     // Instruction function set for half, first time
     waitUntilCommandSent(hd);
-    std::cout << hd.getCycles() << " " << hd.getState().to_string() << std::endl;
+    INFO( "Command sent at: " << hd.getCycles() << " " << hd.getState().to_string() << "\n");
     REQUIRE(compareModelAndSimulationHigh(hd.getState(), hd44780_inst_function_set_half()));
 
     // Wait 10ms for a clear display 
