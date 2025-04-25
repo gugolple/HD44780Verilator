@@ -27,6 +27,19 @@
 #define PERIOD_FHZ getPeriodOnBase(FHZ)
 #define PERIOD_HFHZ getPeriodOnBase(HFHZ)
 
+bool compareModelAndSimulation(HD44780State const &hd, HD44780Payload const &pld, unsigned char payloadval) {
+    return (hd.rs == pld.getrs()) &
+        (hd.db == payloadval);
+}
+
+bool compareModelAndSimulationHigh(HD44780State const &hd, HD44780Payload const &pld) {
+    return compareModelAndSimulation(hd, pld, pld.gethighbits());
+}
+
+bool compareModelAndSimulationLow(HD44780State const &hd, HD44780Payload const &pld) {
+    return compareModelAndSimulation(hd, pld, pld.getlowbits());
+}
+
 constexpr unsigned long long getPeriodOnBase(unsigned long long freq) {
     return TIME_BASE/freq;
 }
@@ -36,33 +49,88 @@ constexpr unsigned long long convertSecondsToCycleCount(unsigned long long time)
 }
 
 constexpr unsigned long long convertMilliSecondsToCycleCount(unsigned long long time) {
-    unsigned long long val = time * FHZ / MS;
+    unsigned long long val = convertSecondsToCycleCount(time) / MS;
     assert(val);
     return val;
 }
 
 constexpr unsigned long long convertMicroSecondsToCycleCount(unsigned long long time) {
-    unsigned long long val = time * FHZ / US;
+    unsigned long long val = convertSecondsToCycleCount(time) / US;
     assert(val);
     return val;
 }
 
 constexpr unsigned long long convertNanoSecondsToCycleCount(unsigned long long time) {
-    unsigned long long val = time * FHZ / NS;
+    unsigned long long val = convertSecondsToCycleCount(time) / NS;
     assert(val);
     return val;
 }
 
+constexpr unsigned long long convertSecondsToHalfCycleCount(unsigned long long time) {
+    return time * HFHZ;
+}
+
+constexpr unsigned long long convertMilliSecondsToHalfCycleCount(unsigned long long time) {
+    unsigned long long val = convertSecondsToHalfCycleCount(time) / MS;
+    assert(val);
+    return val;
+}
+
+constexpr unsigned long long convertMicroSecondsToHalfCycleCount(unsigned long long time) {
+    unsigned long long val = convertSecondsToHalfCycleCount(time) / US;
+    assert(val);
+    return val;
+}
+
+constexpr unsigned long long convertNanoSecondsToHalfCycleCount(unsigned long long time) {
+    unsigned long long val = convertSecondsToHalfCycleCount(time) / NS;
+    assert(val);
+    return val;
+}
+
+void printState(WrapHD44780 const &hd, HD44780State const &initial, HD44780State const &cur) {
+    std::cout << "At cycle: " << hd.getCycles() << " at hcycle: " << hd.getHCycles() << std::endl;
+    std::cout << "Initial: " << initial.to_string() << std::endl;
+    std::cout << "Current: " << cur.to_string() << std::endl;
+}
+
+void maintainStateHalfs(WrapHD44780 &hd, const int hcycles, HD44780State &initial) {
+    for (int i=0; i<hcycles; i++) {
+        hd.nextHalfCycle();
+        HD44780State cur = hd.getState();
+        unsigned char comp = initial.compareOutputs(cur);
+        if (!comp) {
+            printState(hd, initial, cur);
+        }
+        REQUIRE(comp);
+    }
+}
+
 void maintainState(WrapHD44780 &hd, const int cycles, HD44780State &initial) {
-    for (int i=0; i<200; i++) {
+    for (int i=0; i<cycles; i++) {
         hd.nextCycle();
         HD44780State cur = hd.getState();
         unsigned char comp = initial.compareOutputs(cur);
         if (!comp) {
-            std::cout << "Initial: " << initial.to_string() << std::endl;
-            std::cout << "Initial: " << cur.to_string() << std::endl;
+            printState(hd, initial, cur);
         }
         REQUIRE(comp);
+    }
+}
+
+void waitUntilCommandSent(WrapHD44780 &hd) {
+    // E pin known to be high with the loop
+    while (!hd.gete()) {hd.nextHalfCycle();};
+    std::cout << "E is high at " << hd.getCycles() << std::endl;
+    while (hd.gete()) {hd.nextHalfCycle();};
+    std::cout << "E is low at " << hd.getCycles() << std::endl;
+}
+
+void waitUntilChange(WrapHD44780 &hd, HD44780State &initial) {
+    HD44780State cur = hd.getState();
+    while(initial.compareOutputs(cur)) {
+        hd.nextHalfCycle();
+        cur = hd.getState();
     }
 }
 
@@ -73,6 +141,7 @@ void resetSequence(WrapHD44780 &hd) {
     HD44780State old = hd.getState();
     // Due to doing each edge, 100 cycles
     maintainState(hd, 100*2, old);
+    hd.setrst(1);
 }
 
 TEST_CASE("Reset of HD44780") {
@@ -88,6 +157,16 @@ TEST_CASE("Initialization of HD44780") {
 
     // Wait 100ms for restart
     HD44780State old = hd.getState();
+    maintainStateHalfs(hd, convertMilliSecondsToHalfCycleCount(100), old);
+
+    // Instruction function set for half, first time
+    waitUntilCommandSent(hd);
+    std::cout << hd.getCycles() << " " << hd.getState().to_string() << std::endl;
+    REQUIRE(compareModelAndSimulationHigh(hd.getState(), hd44780_inst_function_set_half()));
+
+    // Wait 10ms for a clear display 
+    old = hd.getState();
+    maintainStateHalfs(hd, convertMilliSecondsToHalfCycleCount(10), old);
 }
 
 int main( int argc, char* argv[] ) {
@@ -97,9 +176,5 @@ int main( int argc, char* argv[] ) {
     Verilated::commandArgs(argc, argv);
     // Entry point for all the library
     int result = Catch::Session().run( argc, argv );
-    std::cout << convertSecondsToCycleCount(100) << std::endl;
-    std::cout << convertMilliSecondsToCycleCount(100) << std::endl;
-    std::cout << convertMicroSecondsToCycleCount(100) << std::endl;
-    std::cout << convertNanoSecondsToCycleCount(100) << std::endl;
     return result;
 }

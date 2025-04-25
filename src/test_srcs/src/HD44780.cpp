@@ -8,7 +8,7 @@
 #include <sstream>
 #include <bitset>
 
-bool HD44780State::operator== (const HD44780State& o) {
+bool HD44780State::operator== (const HD44780State& o) const {
         return (this->rst == o.rst) &
         (this->clk == o.clk) &
         (this->trg == o.trg) &
@@ -18,19 +18,19 @@ bool HD44780State::operator== (const HD44780State& o) {
         (this->db == o.db);
 }
 
-bool HD44780State::operator!= (const HD44780State& o) {
+bool HD44780State::operator!= (const HD44780State& o) const {
     return !(*this == o);
 }
 
 // Check only the output values that are sent outside
 // other flags are permitted to be changed
-bool HD44780State::compareOutputs (const HD44780State& o) {
+bool HD44780State::compareOutputs (const HD44780State& o) const {
         return (this->e == o.e) &
         (this->rs == o.rs) &
         (this->db == o.db);
 }
 
-std::string HD44780State::to_string() {
+std::string HD44780State::to_string() const {
     std::stringstream ss;
     ss << " Rst: " << (unsigned int)rst;
     ss << " Clk: " << (unsigned int)clk;
@@ -98,35 +98,39 @@ void WrapHD44780::setReset(unsigned char reset) {
     hd44780.rst = reset;
 }
 
-unsigned long long WrapHD44780::getCycles() {
+unsigned long long WrapHD44780::getCycles() const {
     return cycle;
 }
 
-unsigned char WrapHD44780::getrst() {
+unsigned long long WrapHD44780::getHCycles() const {
+    return hcycle;
+}
+
+unsigned char WrapHD44780::getrst() const {
     return hd44780.rst;
 }
 
-unsigned char WrapHD44780::getclk() {
+unsigned char WrapHD44780::getclk() const {
     return hd44780.clk;
 }
 
-unsigned char WrapHD44780::gettrg() {
+unsigned char WrapHD44780::gettrg() const {
     return hd44780.trg;
 }
 
-unsigned char WrapHD44780::getbusy() {
+unsigned char WrapHD44780::getbusy() const {
     return hd44780.busy;
 }
 
-unsigned char WrapHD44780::gete() {
+unsigned char WrapHD44780::gete() const {
     return hd44780.e;
 }
 
-unsigned char WrapHD44780::getrs() {
+unsigned char WrapHD44780::getrs() const {
     return hd44780.rs;
 }
 
-unsigned char WrapHD44780::getdb() {
+unsigned char WrapHD44780::getdb() const {
     return hd44780.db;
 }
 
@@ -134,7 +138,7 @@ void WrapHD44780::syncVariables() {
     this->le = hd44780.e;
 }
 
-HD44780State WrapHD44780::getState() {
+HD44780State WrapHD44780::getState() const {
     return HD44780State {
         .rst = hd44780.rst,
         .clk = hd44780.clk,

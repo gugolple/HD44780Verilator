@@ -1,5 +1,8 @@
 #ifndef HD44780GENERAL_HPP
 #define HD44780GENERAL_HPP
+
+#include <sstream>
+
 // Hardware configuration of unit
 #define HD44780_CONFIG_DL_DATA_LENGTH   0 //0 - 4 | 1 - 8 //Bits for comm
 #define HD44780_CONFIG_N_DISPLAY_LINES  1 //0 - 1 | 1 - 2
@@ -38,6 +41,65 @@
 #define HD44780_START_ADD_L2          (0x40)
 #define HD44780_START_ADD_L3          (0x10) 
 #define HD44780_START_ADD_L4          (0x50)
+
+// Pins assigned for the HD44780 interface
+// Only 4 high used if set to 4 bit mode at HD44780_MODE
+#if HD44780_CONFIG_DL_DATA_LENGTH == 1
+#define HD44780_MODE 8
+#elif HD44780_CONFIG_DL_DATA_LENGTH == 0
+#define HD44780_MODE 4
+#else
+#error INVALID HD44780_CONFIG_DL_DATA_LENGTH MUST BE EITHER 0 or 1
+#endif
+
+#define NROW 4
+#define ROWLEN 17
+
+/* 
+ * All operations are:
+ * - HD44780_PINS_E goes high
+ * - HD44780_PINS_DATA gets set
+ * - Wait until the 1/500k for the clock to elapse the time
+ * - HD44780_PINS_E goes low, committing the instruction
+ */
+#if HD44780_CONFIG_DL_DATA_LENGTH == 1
+class HD44780Payload {
+    public:
+        HD44780Payload(int payload, bool rss);
+        int getbits() const;
+        int getrs() const;
+    private:
+        bool rs;
+        int bits;
+};
+
+#elif HD44780_CONFIG_DL_DATA_LENGTH == 0
+class HD44780Payload {
+    public:
+        HD44780Payload(int payload, bool rss);
+        HD44780Payload(int payload, bool rss, bool oh);
+        int getrs() const;
+        int gethighbits() const;
+        int getlowbits() const;
+        std::string to_string() const;
+
+    private:
+        bool rs;
+        bool onlyhigh;
+        int highbits;
+        int lowbits;
+};
+#endif
+
+HD44780Payload hd44780_inst_display_clear();
+HD44780Payload hd44780_inst_return_home();
+HD44780Payload hd44780_inst_entry_mode_set(const int id, const int s);
+HD44780Payload hd44780_inst_display_control(const int d, const int c, const int b);
+HD44780Payload hd44780_inst_cursor_display_shift(const int sc, const int rl);
+HD44780Payload hd44780_inst_function_set_half();
+HD44780Payload hd44780_inst_function_set();
+HD44780Payload hd44780_inst_set_cgram_address(const int address);
+HD44780Payload hd44780_inst_set_ddram_address(const int address);
 
 void reset_sequence();
 #endif

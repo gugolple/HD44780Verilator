@@ -12,10 +12,10 @@ struct HD44780State {
     unsigned char rs;
     unsigned char db;
 
-    bool operator== (const HD44780State& o);
-    bool operator!= (const HD44780State& o);
-    bool compareOutputs(const HD44780State& o);
-    std::string to_string(); 
+    bool operator== (const HD44780State& o) const;
+    bool operator!= (const HD44780State& o) const;
+    bool compareOutputs(const HD44780State& o) const;
+    std::string to_string() const; 
 };
 
 class WrapHD44780 {
@@ -28,17 +28,18 @@ class WrapHD44780 {
         bool changeEnable();
         bool transitionEnableHigh();
         void setReset(unsigned char reset);
-        unsigned long long getCycles();
+        unsigned long long getCycles() const;
+        unsigned long long getHCycles() const;
 
         // Interface with the system below
-        unsigned char getrst();
-        unsigned char getclk();
-        unsigned char gettrg();
-        unsigned char getbusy();
-        unsigned char gete();
-        unsigned char getrs();
-        unsigned char getdb();
-        HD44780State getState();
+        unsigned char getrst() const;
+        unsigned char getclk() const;
+        unsigned char gettrg() const;
+        unsigned char getbusy() const;
+        unsigned char gete() const;
+        unsigned char getrs() const;
+        unsigned char getdb() const;
+        HD44780State getState() const;
 
         void setrst(unsigned char);
         void settrg(unsigned char);

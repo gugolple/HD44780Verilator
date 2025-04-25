@@ -1,11 +1,8 @@
 #ifndef HD44780GENERAL_HPP
 #include "HD44780General.hpp"
 #endif 
-#include <sstream>
 #include <bitset>
 #include <iostream>
-
-#define ARRAY_SIZE(a) (sizeof(a)/sizeof(a[0]))
 
 const int HD44780_LINE_START_LOC[] = {
     HD44780_START_ADD_L1,
@@ -14,19 +11,8 @@ const int HD44780_LINE_START_LOC[] = {
     HD44780_START_ADD_L4
 };
 
-// Pins assigned for the HD44780 interface
-// Only 4 high used if set to 4 bit mode at HD44780_MODE
-#if HD44780_CONFIG_DL_DATA_LENGTH == 1
-#define HD44780_MODE 8
-#elif HD44780_CONFIG_DL_DATA_LENGTH == 0
-#define HD44780_MODE 4
-#else
-#error INVALID HD44780_CONFIG_DL_DATA_LENGTH MUST BE EITHER 0 or 1
-#endif
 const int HD44780_PIN_COUNT = HD44780_MODE;
 
-#define NROW 4
-#define ROWLEN 17
 char hd44780_display_data[NROW][ROWLEN] = {
     "",
     "",
@@ -46,80 +32,28 @@ int valPos(int pos, int vals) {
     // Force to be 1 or 0
     return (vals & (1u << pos)) ? 1 : 0;
 }
-/* 
- * All operations are:
- * - HD44780_PINS_E goes high
- * - HD44780_PINS_DATA gets set
- * - Wait until the 1/500k for the clock to elapse the time
- * - HD44780_PINS_E goes low, committing the instruction
- */
-#if HD44780_CONFIG_DL_DATA_LENGTH == 1
-class hd44780payload {
-    public:
-        hd44780payload(int payload, bool rss) { bits = payload; rs = rss;}
-        int getbits(){ return bits; }
-        int getrs(){ return rs; }
-    private:
-        bool rs;
-        int bits;
-};
 
-#elif HD44780_CONFIG_DL_DATA_LENGTH == 0
-class hd44780payload {
-    public:
-        hd44780payload(int payload, bool rss) {
-            onlyhigh = false;
-            rs = rss;
-            highbits = get_high_4bits(payload);
-            lowbits = get_low_4bits(payload);
-        }
-        hd44780payload(int payload, bool rss, bool oh) {
-            onlyhigh = oh;
-            rs = rss;
-            highbits = get_high_4bits(payload);
-            lowbits = get_low_4bits(payload);
-        }
-        int getrs(){ return rs; }
-        int gethighbits(){ return highbits; }
-        int getlowbits(){ return lowbits; }
-        std::string to_string() {
-            std::stringstream ss;
-            ss << "HighBits: " << std::bitset<4>((unsigned int)highbits);
-            ss << " LowBits: " << std::bitset<4>((unsigned int)lowbits);
-            ss << " RS: " << (unsigned int)rs;
-            ss << " OnlyH: " << (unsigned int)onlyhigh;
-            return ss.str();
-        }
-
-    private:
-        bool rs;
-        bool onlyhigh;
-        int highbits;
-        int lowbits;
-};
-#endif
-
-hd44780payload hd44780_send_payload(const int v, bool rs, bool oh) {
-    return hd44780payload(v, rs, oh);
+HD44780Payload hd44780_send_payload(const int v, bool rs, bool oh) {
+    return HD44780Payload(v, rs, oh);
 }
 
-hd44780payload hd44780_send_payload(const int v, bool rs) {
+HD44780Payload hd44780_send_payload(const int v, bool rs) {
     return hd44780_send_payload(v, rs, false);
 }
 
-hd44780payload hd44780_send_instruction(const int v) {
+HD44780Payload hd44780_send_instruction(const int v) {
     return hd44780_send_payload(v, false);
 }
 
-hd44780payload hd44780_send_instruction_onlyhigh(const int v) {
+HD44780Payload hd44780_send_instruction_onlyhigh(const int v) {
     return hd44780_send_payload(v, false, true);
 }
 
-hd44780payload hd44780_send_data_payload(const int v) {
+HD44780Payload hd44780_send_data_payload(const int v) {
     return hd44780_send_payload(v, true);
 }
 
-hd44780payload hd44780_inst_display_clear() {
+HD44780Payload hd44780_inst_display_clear() {
     // Per instructions:
     // - DB7: 0
     // - DB6: 0
@@ -134,7 +68,7 @@ hd44780payload hd44780_inst_display_clear() {
     //vTaskDelayUntil( , hd44780_INST_CLEAR_DISPLAY_MS );
 }
 
-hd44780payload hd44780_inst_return_home() {
+HD44780Payload hd44780_inst_return_home() {
     // Per instructions:
     // - DB7: 0
     // - DB6: 0
@@ -149,7 +83,7 @@ hd44780payload hd44780_inst_return_home() {
     //vTaskDelayUntil( , hd44780_INST_CLEAR_DISPLAY_MS );
 }
 
-hd44780payload hd44780_inst_entry_mode_set(const int id, const int s) {
+HD44780Payload hd44780_inst_entry_mode_set(const int id, const int s) {
     // Per instructions:
     // - DB7: 0
     // - DB6: 0
@@ -166,7 +100,7 @@ hd44780payload hd44780_inst_entry_mode_set(const int id, const int s) {
     return hd44780_send_instruction(val);
 }
 
-hd44780payload hd44780_inst_display_control(const int d, const int c,
+HD44780Payload hd44780_inst_display_control(const int d, const int c,
         const int b) {
     // Per instructions:
     // - DB7: 0
@@ -185,7 +119,7 @@ hd44780payload hd44780_inst_display_control(const int d, const int c,
     return hd44780_send_instruction(val);
 }
 
-hd44780payload hd44780_inst_cursor_display_shift(const int sc, const int rl) {
+HD44780Payload hd44780_inst_cursor_display_shift(const int sc, const int rl) {
     // Per instructions:
     // - DB7: 0
     // - DB6: 0
@@ -210,7 +144,7 @@ hd44780payload hd44780_inst_cursor_display_shift(const int sc, const int rl) {
 }
 
 // This specific call is to transition from 8 bit to 4 bit mode
-hd44780payload hd44780_inst_function_set_half() {
+HD44780Payload hd44780_inst_function_set_half() {
     // Per instructions:
     // - DB7: 0
     // - DB6: 0
@@ -230,7 +164,7 @@ hd44780payload hd44780_inst_function_set_half() {
     return hd44780_send_instruction_onlyhigh(val);
 }
 
-hd44780payload hd44780_inst_function_set() {
+HD44780Payload hd44780_inst_function_set() {
     // Per instructions:
     // - DB7: 0
     // - DB6: 0
@@ -250,7 +184,7 @@ hd44780payload hd44780_inst_function_set() {
     return hd44780_send_instruction(val);
 }
 
-hd44780payload hd44780_inst_set_cgram_address(const int address) {
+HD44780Payload hd44780_inst_set_cgram_address(const int address) {
     // Per instructions:
     // - DB7: 0
     // - DB6: 1
@@ -268,7 +202,7 @@ hd44780payload hd44780_inst_set_cgram_address(const int address) {
     return hd44780_send_instruction(val);
 }
 
-hd44780payload hd44780_inst_set_ddram_address(const int address) {
+HD44780Payload hd44780_inst_set_ddram_address(const int address) {
     // Per instructions:
     // - DB7: 1
     // - DB6: Add
@@ -284,6 +218,53 @@ hd44780payload hd44780_inst_set_ddram_address(const int address) {
         (address & 0x7F)
         ;
     return hd44780_send_instruction(val);
+}
+
+#if HD44780_CONFIG_DL_DATA_LENGTH == 1
+HD44780Payload::HD44780Payload(int payload, bool rss) { 
+    bits = payload;
+    rs = rss;
+}
+int HD44780Payload::getbits(){
+    return bits;
+}
+int HD44780Payload::getrs(){
+    return rs;
+}
+#elif HD44780_CONFIG_DL_DATA_LENGTH == 0
+HD44780Payload::HD44780Payload(int payload, bool rss) {
+    onlyhigh = false;
+    rs = rss;
+    highbits = get_high_4bits(payload);
+    lowbits = get_low_4bits(payload);
+}
+
+HD44780Payload::HD44780Payload(int payload, bool rss, bool oh) {
+    onlyhigh = oh;
+    rs = rss;
+    highbits = get_high_4bits(payload);
+    lowbits = get_low_4bits(payload);
+}
+
+int HD44780Payload::getrs() const { 
+    return rs;
+}
+
+int HD44780Payload::gethighbits() const { 
+    return highbits; 
+}
+
+int HD44780Payload::getlowbits() const { 
+    return lowbits;
+}
+
+std::string HD44780Payload::to_string() const {
+    std::stringstream ss;
+    ss << "HighBits: " << std::bitset<4>((unsigned int)highbits);
+    ss << " LowBits: " << std::bitset<4>((unsigned int)lowbits);
+    ss << " RS: " << (unsigned int)rs;
+    ss << " OnlyH: " << (unsigned int)onlyhigh;
+    return ss.str();
 }
 
 void reset_sequence() {
@@ -320,3 +301,4 @@ void reset_sequence() {
     std::cout << hd44780_inst_set_ddram_address(HD44780_START_ADD_L4).to_string() 
         << std::endl;
 }
+#endif

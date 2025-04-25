@@ -23,23 +23,23 @@ int main(int argc, char **argv, char **env)
     WrapHD44780 hd(*contextp);
 
     // Tests
-    //unsigned long long int cnt = 0;
-    //unsigned long long int i = 0;
-    //std::cout << hd.to_string() << std::endl;
-    //for (int i=0; i<100; i++) {
-    //    hd.nextHalfCycle();
-    //    if (hd.transitionEnableHigh()) {
-    //        std::cout << hd.to_string() << std::endl;
-    //    }
-    //}
-    //hd.setReset(1); // Reset is active low on the FPGA model
-    //while(hd.getbusy()) {
-    //    hd.nextHalfCycle();
-    //    if (hd.transitionEnableHigh()) {
-    //        std::cout << hd.to_string() << std::endl;
-    //    }
-    //}
-    //std::cout << "Cycle count: " << hd.getCycles() << std::endl;
+    unsigned long long int cnt = 0;
+    unsigned long long int i = 0;
+    std::cout << hd.to_string() << std::endl;
+    for (int i=0; i<100; i++) {
+        hd.nextHalfCycle();
+        if (hd.transitionEnableHigh()) {
+            std::cout << hd.to_string() << std::endl;
+        }
+    }
+    hd.setReset(1); // Reset is active low on the FPGA model
+    while(hd.getbusy()) {
+        hd.nextHalfCycle();
+        if (hd.transitionEnableHigh()) {
+            std::cout << hd.to_string() << std::endl;
+        }
+    }
+    std::cout << "Cycle count: " << hd.getCycles() << std::endl;
 
     std::cout << "Printout of the known good reset sequence" << std::endl;
     reset_sequence();
