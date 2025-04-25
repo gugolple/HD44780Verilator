@@ -8,6 +8,41 @@
 #include <sstream>
 #include <bitset>
 
+bool HD44780State::operator== (const HD44780State& o) {
+        return (this->rst == o.rst) &
+        (this->clk == o.clk) &
+        (this->trg == o.trg) &
+        (this->busy == o.busy) &
+        (this->e == o.e) &
+        (this->rs == o.rs) &
+        (this->db == o.db);
+}
+
+bool HD44780State::operator!= (const HD44780State& o) {
+    return !(*this == o);
+}
+
+// Check only the output values that are sent outside
+// other flags are permitted to be changed
+bool HD44780State::compareOutputs (const HD44780State& o) {
+        return (this->e == o.e) &
+        (this->rs == o.rs) &
+        (this->db == o.db);
+}
+
+std::string HD44780State::to_string() {
+    std::stringstream ss;
+    ss << " Rst: " << (unsigned int)rst;
+    ss << " Clk: " << (unsigned int)clk;
+    ss << " Trg: " << (unsigned int)trg;
+    ss << " Busy: " << (unsigned int)busy;
+    ss << " E: " << (unsigned int)e;
+    ss << " RS: " << (unsigned int)rs;
+    ss << " DB (h): " << std::hex << (unsigned int)db;
+    ss << " DB (b): " << std::bitset<4>((unsigned int)db);
+    return ss.str();
+}
+
 
 // Class functions
 WrapHD44780::WrapHD44780(VerilatedContext& vc) : hd44780(Vhd44780{&vc}) {
@@ -17,8 +52,6 @@ WrapHD44780::WrapHD44780(VerilatedContext& vc) : hd44780(Vhd44780{&vc}) {
     hd44780.rst = 0; // Negated so is now acting as reset
     hd44780.clk = 0;
     hd44780.trg = 0;
-    // Evaluate to enforce at least one cycle for validity of outputs
-    hd44780.eval();
 }
 
 std::string WrapHD44780::to_string() {
@@ -99,4 +132,24 @@ unsigned char WrapHD44780::getdb() {
 
 void WrapHD44780::syncVariables() {
     this->le = hd44780.e;
+}
+
+HD44780State WrapHD44780::getState() {
+    return HD44780State {
+        .rst = hd44780.rst,
+        .clk = hd44780.clk,
+        .trg = hd44780.trg,
+        .busy = hd44780.busy,
+        .e = hd44780.e,
+        .rs = hd44780.rs,
+        .db = hd44780.db,
+    };
+}
+
+void WrapHD44780::setrst(unsigned char rst) {
+    hd44780.rst = rst;
+}
+
+void WrapHD44780::settrg(unsigned char trg) {
+    hd44780.trg = trg;
 }
