@@ -27,6 +27,8 @@
 #define PERIOD_FHZ getPeriodOnBase(FHZ)
 #define PERIOD_HFHZ getPeriodOnBase(HFHZ)
 
+#define infoCommand(hd) INFO( "Command sent at cycle: " << hd.getCycles() << "\n" "- " << hd.getState().to_string() << "\n")
+
 bool compareModelAndSimulation(HD44780State const &hd, HD44780Payload const &pld, unsigned char payloadval) {
     return (hd.rs == pld.getrs()) &
         (hd.db == payloadval);
@@ -91,8 +93,8 @@ constexpr unsigned long long convertNanoSecondsToHalfCycleCount(unsigned long lo
 void printState(WrapHD44780 const &hd, HD44780State const &initial, HD44780State const &cur) {
      FAIL( "Failure to maintain " << "at cycle: " << hd.getCycles() 
      << " at hcycle: " << hd.getHCycles() << "\n"
-     << "Initial: " << initial.to_string() << "\n"
-     << "Current: " << cur.to_string() << "\n" );
+     << "- Initial: " << initial.to_string() << "\n"
+     << "- Current: " << cur.to_string() << "\n" );
 }
 
 void maintainStateHalfs(WrapHD44780 &hd, const int hcycles, HD44780State &initial) {
@@ -163,7 +165,7 @@ TEST_CASE("Initialization of HD44780") {
 
     // Instruction function set for half, first time
     waitUntilCommandSent(hd);
-    INFO( "Command sent at: " << hd.getCycles() << " " << hd.getState().to_string() << "\n");
+    infoCommand(hd);
     REQUIRE(compareModelAndSimulationHigh(hd.getState(), hd44780_inst_function_set_half()));
 
     // Wait 10ms for a clear display 
