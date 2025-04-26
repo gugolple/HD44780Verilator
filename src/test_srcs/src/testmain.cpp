@@ -91,10 +91,10 @@ constexpr unsigned long long convertNanoSecondsToHalfCycleCount(unsigned long lo
 }
 
 void printState(WrapHD44780 const &hd, HD44780State const &initial, HD44780State const &cur) {
-     FAIL( "Failure to maintain " << "at cycle: " << hd.getCycles() 
-     << " at hcycle: " << hd.getHCycles() << "\n"
-     << "- Initial: " << initial.to_string() << "\n"
-     << "- Current: " << cur.to_string() << "\n" );
+    FAIL( "Failure to maintain " << "at cycle: " << hd.getCycles() 
+            << " at hcycle: " << hd.getHCycles() << "\n"
+            << "- Initial: " << initial.to_string() << "\n"
+            << "- Current: " << cur.to_string() << "\n" );
 }
 
 void maintainStateHalfs(WrapHD44780 &hd, const int hcycles, HD44780State &initial) {
@@ -137,6 +137,15 @@ void waitUntilChange(WrapHD44780 &hd, HD44780State &initial) {
     }
 }
 
+void checkFullCommandSent(WrapHD44780 &hd, HD44780Payload const &pld) {
+    waitUntilCommandSent(hd);
+    infoCommand(hd);
+    REQUIRE(compareModelAndSimulationHigh(hd.getState(), pld));
+    waitUntilCommandSent(hd);
+    infoCommand(hd);
+    REQUIRE(compareModelAndSimulationLow(hd.getState(), pld));
+}
+
 void resetSequence(WrapHD44780 &hd) {
     hd.setrst(0);
     hd.settrg(0);
@@ -161,7 +170,7 @@ TEST_CASE("Initialization of HD44780") {
 
     // Wait 100ms for restart
     HD44780State old = hd.getState();
-    maintainStateHalfs(hd, convertMilliSecondsToHalfCycleCount(100), old);
+    maintainStateHalfs(hd, convertMilliSecondsToHalfCycleCount(HD44780_POWERON_DELAY_MS), old);
 
     // Instruction function set for half, first time
     waitUntilCommandSent(hd);
@@ -170,7 +179,42 @@ TEST_CASE("Initialization of HD44780") {
 
     // Wait 10ms for a clear display 
     old = hd.getState();
-    maintainStateHalfs(hd, convertMilliSecondsToHalfCycleCount(10), old);
+    maintainStateHalfs(hd, convertMilliSecondsToHalfCycleCount(HD44780_INST_CLEAR_DISPLAY_MS), old);
+
+    // Read full function set for half, lines and font
+    checkFullCommandSent(hd,  hd44780_inst_function_set());
+
+    // Wait 10ms for a clear display 
+    old = hd.getState();
+    maintainStateHalfs(hd, convertMilliSecondsToHalfCycleCount(HD44780_INST_CLEAR_DISPLAY_MS), old);
+
+    // Execute clear display command
+    checkFullCommandSent(hd,  hd44780_inst_display_clear());
+
+    // Wait 10ms for a clear display 
+    old = hd.getState();
+    maintainStateHalfs(hd, convertMilliSecondsToHalfCycleCount(HD44780_INST_CLEAR_DISPLAY_MS), old);
+
+    // Execute display control command
+    checkFullCommandSent(hd,  hd44780_inst_display_control(
+        HD44780_CONFIG_D_DISPLAY_ONOFF,
+        HD44780_CONFIG_C_CURSOR_ONOFF,
+        HD44780_CONFIG_C_CURSOR_BLINK
+    ));
+
+    // Wait for instruction processed
+    old = hd.getState();
+    maintainStateHalfs(hd, convertMicroSecondsToCycleCount(HD44780_INST_DELAY_US), old);
+
+    // Execute entry mode set command
+    checkFullCommandSent(hd, hd44780_inst_entry_mode_set(
+        HD44780_CONFIG_ID_INCREMENT_DIRECTION,
+        HD44780_CONFIG_SHIFT_CURSOR
+    ));
+
+    // Wait for instruction processed
+    old = hd.getState();
+    maintainStateHalfs(hd, convertMicroSecondsToHalfCycleCount(HD44780_INST_DELAY_US), old);
 }
 
 int main( int argc, char* argv[] ) {
