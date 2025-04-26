@@ -252,7 +252,10 @@ TEST_CASE("Initialization of HD44780") {
 
 int main( int argc, char* argv[] ) {
     // The version string MUST be always the first line to be printed
-    std::cout << "Commit string: " << VERSION << std::endl;
+    std::cout << "===============================================================================\n";
+    std::cout << "    Test suite commencing - Commit string: " << VERSION 
+        << std::endl;
+    std::cout << "===============================================================================\n";
     // Verilated commandArgs is a global macro/variables type definitions
     Verilated::commandArgs(argc, argv);
     // Entry point for all the library
