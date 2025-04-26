@@ -13,6 +13,8 @@
 #include "HD44780General.hpp"
 #endif 
 
+#define MAX_COMMAND_WAIT_SENT convertSecondsToHalfCycleCount(1)
+
 // Defines the temporal basis for all calculations in how many units of a second.
 // This factor should be applied to any and all second calculations.
 // The idea is to keep everything as a positive integer without floating point
@@ -121,11 +123,29 @@ void maintainStateCycles(WrapHD44780 &hd, const int cycles, HD44780State &initia
     }
 }
 
+void timeoutError(WrapHD44780 const &hd, const unsigned long long int initial) {
+    FAIL("Wait for command too long.\n- Initial command cycle: "
+        << initial << "\n- Current command cycle: " << hd.getHCycles()
+    );
+}
+
 void waitUntilCommandSent(WrapHD44780 &hd) {
+    const unsigned long long int initialHCycle = hd.getHCycles();
+    const unsigned long long int targetHCycle = initialHCycle + MAX_COMMAND_WAIT_SENT;
     // E pin known to be high with the loop
-    while (!hd.gete()) {hd.nextHalfCycle();};
+    while (!hd.gete()) {
+        hd.nextHalfCycle();
+        if(hd.getHCycles() >= targetHCycle) {
+            timeoutError(hd, initialHCycle);
+        }
+    };
     INFO( "E is high at " << hd.getCycles() << "\n" );
-    while (hd.gete()) {hd.nextHalfCycle();};
+    while (hd.gete()) {
+        hd.nextHalfCycle();
+        if(hd.getHCycles() >= targetHCycle) {
+            timeoutError(hd, initialHCycle);
+        }
+    };
     INFO( "E is low at " << hd.getCycles() << "\n" );
 }
 
