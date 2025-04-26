@@ -40,8 +40,5 @@ int main(int argc, char **argv, char **env)
         }
     }
     std::cout << "Cycle count: " << hd.getCycles() << std::endl;
-
-    std::cout << "Printout of the known good reset sequence" << std::endl;
-    reset_sequence();
     exit(0);
 }

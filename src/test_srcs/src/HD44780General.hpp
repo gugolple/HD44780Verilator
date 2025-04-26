@@ -100,6 +100,4 @@ HD44780Payload hd44780_inst_function_set_half();
 HD44780Payload hd44780_inst_function_set();
 HD44780Payload hd44780_inst_set_cgram_address(const int address);
 HD44780Payload hd44780_inst_set_ddram_address(const int address);
-
-void reset_sequence();
 #endif

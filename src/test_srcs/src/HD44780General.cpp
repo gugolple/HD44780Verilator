@@ -266,39 +266,4 @@ std::string HD44780Payload::to_string() const {
     ss << " OnlyH: " << (unsigned int)onlyhigh;
     return ss.str();
 }
-
-void reset_sequence() {
-    // Fully wait until initialization is compleated
-    //vTaskDelayUntil( , hd44780_POWERON_DELAY_MS );
-    // Instruction to archieve the correct initialization
-#if HD44780_CONFIG_DL_DATA_LENGTH == 0
-    std::cout << hd44780_inst_function_set_half().to_string() << std::endl;
-    //vTaskDelayUntil( , hd44780_INST_CLEAR_DISPLAY_MS );
-#endif
-    std::cout << hd44780_inst_function_set().to_string() << std::endl;
-    //vTaskDelayUntil( , hd44780_INST_CLEAR_DISPLAY_MS );
-    std::cout << hd44780_inst_display_clear().to_string() << std::endl;
-    std::cout << hd44780_inst_display_control(
-            HD44780_CONFIG_D_DISPLAY_ONOFF,
-            HD44780_CONFIG_C_CURSOR_ONOFF,
-            HD44780_CONFIG_C_CURSOR_BLINK
-            ).to_string() 
-        << std::endl;
-    std::cout << hd44780_inst_entry_mode_set(
-            HD44780_CONFIG_ID_INCREMENT_DIRECTION,
-            HD44780_CONFIG_SHIFT_CURSOR
-            ).to_string()
-        << std::endl;
-
-    // Set start point
-    std::cout << "Print all starting points" << std::endl;
-    std::cout << hd44780_inst_set_ddram_address(HD44780_START_ADD_L1).to_string() 
-        << std::endl;
-    std::cout << hd44780_inst_set_ddram_address(HD44780_START_ADD_L2).to_string() 
-        << std::endl;
-    std::cout << hd44780_inst_set_ddram_address(HD44780_START_ADD_L3).to_string() 
-        << std::endl;
-    std::cout << hd44780_inst_set_ddram_address(HD44780_START_ADD_L4).to_string() 
-        << std::endl;
-}
 #endif
