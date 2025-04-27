@@ -3,6 +3,8 @@ m4_define([nu_version],
 AC_INIT([vtesthd44780], [m4_defn([nu_version])], [juanignacio.croce@gmail.com])
 AM_INIT_AUTOMAKE([-Wall -Werror foreign subdir-objects])
 
+# This is run at the where the config is executed, being done within the
+# actual compilation environment, that is the reason of an extra folder up
 SRCSVERSION=`../package-version ../../fpga_gowin_hd44780/ version-stamp`
 AC_DEFINE_UNQUOTED([SRCSVERSION],
                    ["$SRCSVERSION"],
