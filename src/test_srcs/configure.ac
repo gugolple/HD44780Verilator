@@ -3,6 +3,11 @@ m4_define([nu_version],
 AC_INIT([vtesthd44780], [m4_defn([nu_version])], [juanignacio.croce@gmail.com])
 AM_INIT_AUTOMAKE([-Wall -Werror foreign subdir-objects])
 
+SRCSVERSION=`../package-version ../../fpga_gowin_hd44780/ version-stamp`
+AC_DEFINE_UNQUOTED([SRCSVERSION],
+                   ["$SRCSVERSION"],
+                   [Define SRCS revision number])
+
 # Debug flag
 AC_ARG_ENABLE(debug,
 AS_HELP_STRING([--enable-debug],

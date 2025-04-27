@@ -275,13 +275,16 @@ TEST_CASE("Initialization of HD44780") {
             timeoutError(hd, initialHCycle);
         }
     }
+
+    // At this moment the printing sequence shall commence
 }
 
 int main( int argc, char* argv[] ) {
     // The version string MUST be always the first line to be printed
     std::cout << "===============================================================================\n";
     std::cout << "Test suite commencing\n";
-    std::cout << "Commit string: " << VERSION << "\n";
+    std::cout << "Srcs commit: " << SRCSVERSION << "\n";
+    std::cout << "Test suite commit: " << VERSION << "\n";
     std::cout << "===============================================================================\n";
     // Verilated commandArgs is a global macro/variables type definitions
     Verilated::commandArgs(argc, argv);
