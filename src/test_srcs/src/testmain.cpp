@@ -191,24 +191,13 @@ void resetSequence(WrapHD44780 &hd) {
     HD44780State old = hd.getState();
     // Arbitrary value, just an amount greater than 1 cycle to give the system
     // an opportunity
+    INFO("Commit reset");
     maintainStateCycles(hd, 100, old);
     hd.setrst(1);
-}
-
-TEST_CASE("Reset of HD44780") {
-    const std::unique_ptr<VerilatedContext> contextp{new VerilatedContext};
-    WrapHD44780 hd(*contextp);
-    resetSequence(hd);
-}
-
-TEST_CASE("Initialization of HD44780") {
-    const std::unique_ptr<VerilatedContext> contextp{new VerilatedContext};
-    WrapHD44780 hd(*contextp);
-    resetSequence(hd);
 
     // Wait 100ms for restart
     INFO("Restart wait");
-    HD44780State old = hd.getState();
+    old = hd.getState();
     maintainStateHalfs(hd, convertMilliSecondsToHalfCycleCount(HD44780_POWERON_DELAY_MS), old);
 
     // Instruction function set for half, first time
@@ -263,6 +252,18 @@ TEST_CASE("Initialization of HD44780") {
     INFO("Entry mode wait");
     old = hd.getState();
     maintainStateHalfs(hd, convertMicroSecondsToHalfCycleCount(HD44780_INST_DELAY_US), old);
+}
+
+TEST_CASE("Reset of HD44780") {
+    const std::unique_ptr<VerilatedContext> contextp{new VerilatedContext};
+    WrapHD44780 hd(*contextp);
+    resetSequence(hd);
+}
+
+TEST_CASE("Initialization of HD44780") {
+    const std::unique_ptr<VerilatedContext> contextp{new VerilatedContext};
+    WrapHD44780 hd(*contextp);
+    resetSequence(hd);
 }
 
 int main( int argc, char* argv[] ) {
