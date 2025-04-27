@@ -31,9 +31,24 @@
 
 #define infoCommand(hd) INFO( "Command sent at cycle: " << hd.getCycles() << "\n" "- " << hd.getState().to_string() << "\n")
 
-bool compareModelAndSimulation(HD44780State const &hd, HD44780Payload const &pld, unsigned char payloadval) {
-    return (hd.rs == pld.getrs()) &
+void failedCompareModelAndSimulation(bool b, HD44780State const &hd, 
+    HD44780Payload const &pld, unsigned char payloadval) {
+    FAIL("Model and simulation differ"
+        << "\n- Model RS: " << (unsigned int)pld.getrs() << " DB: " 
+            << (unsigned int)payloadval
+        << "\n- Simul RS: " << (unsigned int)hd.rs << " DB: " 
+            << (unsigned int)hd.db
+    );
+}
+
+bool compareModelAndSimulation(HD44780State const &hd, HD44780Payload const &pld,
+    unsigned char payloadval) {
+    bool res = (hd.rs == pld.getrs()) &
         (hd.db == payloadval);
+    if (!res) {
+        failedCompareModelAndSimulation(res, hd, pld, payloadval);
+    }
+    return res;
 }
 
 bool compareModelAndSimulationHigh(HD44780State const &hd, HD44780Payload const &pld) {
