@@ -4,13 +4,17 @@
 #include "verilated.h"
 
 struct HD44780State {
-    unsigned char rst;
     unsigned char clk;
+    unsigned char rst;
     unsigned char trg;
     unsigned char busy;
+    unsigned char busy_reset;
+    unsigned char busy_print;
     unsigned char e;
     unsigned char rs;
     unsigned char db;
+    unsigned char idataaddr;
+    unsigned char idata;
 
     bool operator== (const HD44780State& o) const;
     bool operator!= (const HD44780State& o) const;
@@ -32,17 +36,11 @@ class WrapHD44780 {
         unsigned long long getHCycles() const;
 
         // Interface with the system below
-        unsigned char getrst() const;
-        unsigned char getclk() const;
-        unsigned char gettrg() const;
-        unsigned char getbusy() const;
-        unsigned char gete() const;
-        unsigned char getrs() const;
-        unsigned char getdb() const;
         HD44780State getState() const;
 
         void setrst(unsigned char);
         void settrg(unsigned char);
+        void setidata(unsigned char);
 
     private:
         Vhd44780 hd44780;

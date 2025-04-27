@@ -33,7 +33,7 @@ int main(int argc, char **argv, char **env)
         }
     }
     hd.setReset(1); // Reset is active low on the FPGA model
-    while(hd.getbusy()) {
+    while(hd.getState().busy_reset) {
         hd.nextHalfCycle();
         if (hd.transitionEnableHigh()) {
             std::cout << hd.to_string() << std::endl;

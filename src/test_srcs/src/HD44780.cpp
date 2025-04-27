@@ -106,47 +106,23 @@ unsigned long long WrapHD44780::getHCycles() const {
     return hcycle;
 }
 
-unsigned char WrapHD44780::getrst() const {
-    return hd44780.rst;
-}
-
-unsigned char WrapHD44780::getclk() const {
-    return hd44780.clk;
-}
-
-unsigned char WrapHD44780::gettrg() const {
-    return hd44780.trg;
-}
-
-unsigned char WrapHD44780::getbusy() const {
-    return hd44780.busy;
-}
-
-unsigned char WrapHD44780::gete() const {
-    return hd44780.e;
-}
-
-unsigned char WrapHD44780::getrs() const {
-    return hd44780.rs;
-}
-
-unsigned char WrapHD44780::getdb() const {
-    return hd44780.db;
-}
-
 void WrapHD44780::syncVariables() {
     this->le = hd44780.e;
 }
 
 HD44780State WrapHD44780::getState() const {
     return HD44780State {
-        .rst = hd44780.rst,
         .clk = hd44780.clk,
+        .rst = hd44780.rst,
         .trg = hd44780.trg,
         .busy = hd44780.busy,
+        .busy_reset = hd44780.busy_reset,
+        .busy_print = hd44780.busy_print,
         .e = hd44780.e,
         .rs = hd44780.rs,
         .db = hd44780.db,
+        .idataaddr = hd44780.idataaddr,
+        .idata = hd44780.idata,
     };
 }
 
@@ -156,4 +132,8 @@ void WrapHD44780::setrst(unsigned char rst) {
 
 void WrapHD44780::settrg(unsigned char trg) {
     hd44780.trg = trg;
+}
+
+void WrapHD44780::setidata(unsigned char idata) {
+    hd44780.idata = idata;
 }
