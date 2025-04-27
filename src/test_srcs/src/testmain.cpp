@@ -193,8 +193,8 @@ void receiveSingleData(WrapHD44780 &hd, const char *l, unsigned int pos,
         }
     };
     INFO( "E is high at " << hd.getCycles() << "\n" );
-    hd.setidata(l[hd.getState().idataaddr - offset]);
     REQUIRE(((unsigned int)hd.getState().idataaddr - offset) == pos);
+    hd.setidata(l[hd.getState().idataaddr - offset]);
     // E and RS have to be high
     REQUIRE((hd.getState().e && hd.getState().rs));
     while (hd.getState().e) {
