@@ -266,4 +266,20 @@ std::string HD44780Payload::to_string() const {
     ss << " OnlyH: " << (unsigned int)onlyhigh;
     return ss.str();
 }
+
+HD44780Payload hd44780_inst_set_ddram_l1() {
+    return hd44780_inst_set_ddram_address(HD44780_START_ADD_L1);
+}
+
+HD44780Payload hd44780_inst_set_ddram_l2() {
+    return hd44780_inst_set_ddram_address(HD44780_START_ADD_L2);
+}
+
+HD44780Payload hd44780_inst_set_ddram_l3() {
+    return hd44780_inst_set_ddram_address(HD44780_START_ADD_L3);
+}
+
+HD44780Payload hd44780_inst_set_ddram_l4() {
+    return hd44780_inst_set_ddram_address(HD44780_START_ADD_L4);
+}
 #endif

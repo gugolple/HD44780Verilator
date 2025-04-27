@@ -54,6 +54,7 @@
 
 #define NROW 4
 #define ROWLEN 17
+#define ROWLENACT 16
 
 /* 
  * All operations are:
@@ -100,4 +101,8 @@ HD44780Payload hd44780_inst_function_set_half();
 HD44780Payload hd44780_inst_function_set();
 HD44780Payload hd44780_inst_set_cgram_address(const int address);
 HD44780Payload hd44780_inst_set_ddram_address(const int address);
+HD44780Payload hd44780_inst_set_ddram_l1();
+HD44780Payload hd44780_inst_set_ddram_l2();
+HD44780Payload hd44780_inst_set_ddram_l3();
+HD44780Payload hd44780_inst_set_ddram_l4();
 #endif

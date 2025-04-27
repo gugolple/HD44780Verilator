@@ -3,6 +3,7 @@
 #include <iostream>
 #include "config.h"
 #include <cassert>
+#include <algorithm>
 
 // Definitions for the system in question to be tested
 #include "verilated.h"
@@ -12,6 +13,8 @@
 #ifndef HD44780GENERAL_HPP
 #include "HD44780General.hpp"
 #endif 
+
+#define ARRAY_SIZE(a) (sizeof(a)/sizeof(a[0]))
 
 #define MAX_COMMAND_WAIT_SENT convertSecondsToHalfCycleCount(1)
 
@@ -175,6 +178,63 @@ void waitUntilChange(WrapHD44780 &hd, HD44780State &initial) {
     }
 }
 
+void receiveSingleData(WrapHD44780 &hd, const char *l, unsigned int pos,
+        const unsigned int offset) {
+    // Always give the requested value
+    const unsigned long long int initialHCycle = hd.getHCycles();
+    const unsigned long long int targetHCycle = initialHCycle + MAX_COMMAND_WAIT_SENT;
+    // E pin known to be high with the loop
+    REQUIRE(!hd.getState().e);
+    while (!hd.getState().e) {
+        // Every clock provide requested idata from idataaaddr
+        hd.nextHalfCycle();
+        if(hd.getHCycles() >= targetHCycle) {
+            timeoutError(hd, initialHCycle);
+        }
+    };
+    INFO( "E is high at " << hd.getCycles() << "\n" );
+    hd.setidata(l[hd.getState().idataaddr - offset]);
+    REQUIRE(((unsigned int)hd.getState().idataaddr - offset) == pos);
+    // E and RS have to be high
+    REQUIRE((hd.getState().e && hd.getState().rs));
+    while (hd.getState().e) {
+        hd.nextHalfCycle();
+        if(hd.getHCycles() >= targetHCycle) {
+            timeoutError(hd, initialHCycle);
+        }
+    };
+    INFO( "E is low at " << hd.getCycles() << "\n" );
+    REQUIRE((!hd.getState().e && hd.getState().rs));
+}
+
+// Offset for when lines L2 and L4 that start reading the buffer at 32
+void receiveData(WrapHD44780 &hd, const char *l, const unsigned int offset) {
+    for(int i=0; i<(ROWLENACT*2); i++) {
+        INFO("Character of sequence: " << l[i] << " number: " << i);
+        receiveSingleData(hd, l, i, offset);
+        const unsigned char high_bits = hd.getState().db; 
+        receiveSingleData(hd, l, i, offset);
+        const unsigned char low_bits = hd.getState().db; 
+        //const unsigned char actual_received = high_bits << 4 | low_bits;
+        const unsigned char actual_received = high_bits << 4 | low_bits;
+        REQUIRE((unsigned int)actual_received == (unsigned int)l[i]);
+    }
+}
+
+void checkReceptionOfLines(WrapHD44780 &hd, const char *l1, const char *l2,
+        const unsigned int offset) {
+    char combinedLines[ROWLENACT*2+1];
+    for(int i=0; i<ROWLENACT; i++) {
+        combinedLines[i] = l1[i];
+    }
+    for(int i=0; i<ROWLENACT; i++) {
+        combinedLines[i+ROWLENACT] = l2[i];
+    }
+    // Force last value to be 0 to comply with C strings
+    combinedLines[ROWLENACT*2] = '\0';
+    receiveData(hd, combinedLines, offset);
+}
+
 void checkFullCommandSent(WrapHD44780 &hd, HD44780Payload const &pld) {
     waitUntilCommandSent(hd);
     infoCommand(hd);
@@ -184,7 +244,7 @@ void checkFullCommandSent(WrapHD44780 &hd, HD44780Payload const &pld) {
     REQUIRE(compareModelAndSimulationLow(hd.getState(), pld));
 }
 
-void resetSequence(WrapHD44780 &hd) {
+void initialReset(WrapHD44780 &hd) {
     hd.setrst(0);
     hd.settrg(0);
     hd.nextHalfCycle();
@@ -194,6 +254,11 @@ void resetSequence(WrapHD44780 &hd) {
     INFO("Commit reset");
     maintainStateCycles(hd, 100, old);
     hd.setrst(1);
+}
+
+void resetSequence(WrapHD44780 &hd) {
+    initialReset(hd);
+    HD44780State old = hd.getState();
 
     // Wait 100ms for restart
     INFO("Restart wait");
@@ -252,20 +317,44 @@ void resetSequence(WrapHD44780 &hd) {
     INFO("Entry mode wait");
     old = hd.getState();
     maintainStateHalfs(hd, convertMicroSecondsToHalfCycleCount(HD44780_INST_DELAY_US), old);
+
+    // Confirm that at some point later the busy_reset flag is set to 0
+    // indicating the process has been completed
+    INFO("Wait until busy_reset is low.");
+    const unsigned long long int initialHCycle = hd.getHCycles();
+    const unsigned long long int targetHCycle = initialHCycle + MAX_COMMAND_WAIT_SENT;
+    while(hd.getState().busy_reset) {
+        hd.nextHalfCycle();
+        if(hd.getState().e) {
+            FAIL("Command received after full reset sequence" 
+                << (unsigned int)hd.getState().rs << " DB: " 
+                << (unsigned int)hd.getState().db
+            );
+        }
+        if(hd.getHCycles() >= targetHCycle) {
+            timeoutError(hd, initialHCycle);
+        }
+    }
+    // Add positive check in addition to the error that will trigger in case of
+    // failure before
+    REQUIRE(1);
 }
 
-TEST_CASE("Reset of HD44780") {
+TEST_CASE("Full Reset of HD44780", "[RST]") {
     const std::unique_ptr<VerilatedContext> contextp{new VerilatedContext};
     WrapHD44780 hd(*contextp);
     resetSequence(hd);
 }
 
-TEST_CASE("Initialization of HD44780") {
+TEST_CASE("Initialization of HD44780", "[TRS]") {
     const std::unique_ptr<VerilatedContext> contextp{new VerilatedContext};
     WrapHD44780 hd(*contextp);
-    resetSequence(hd);
 
     // Printing sequence
+    // This flag indicates the state machine of the reset sequence has been
+    // compleated
+    INFO("Realize initial reset sequence.");
+    initialReset(hd);
     INFO("Wait until busy_reset is low.");
     const unsigned long long int initialHCycle = hd.getHCycles();
     const unsigned long long int targetHCycle = initialHCycle + MAX_COMMAND_WAIT_SENT;
@@ -275,8 +364,22 @@ TEST_CASE("Initialization of HD44780") {
             timeoutError(hd, initialHCycle);
         }
     }
+    // Add positive check in addition to the error that will trigger in case of
+    // failure before
+    REQUIRE(1);
 
-    // At this moment the printing sequence shall commence
+    // Check the receptions of L1 and L3
+    INFO("Receive set DDRAM address to L1");
+    checkFullCommandSent(hd, hd44780_inst_set_ddram_l1());
+
+    INFO("Receive L1 and L3");
+    checkReceptionOfLines(hd, "1234567890abcdfe", "efcdba0987654321", 0);
+
+    INFO("Receive set DDRAM address to L2");
+    checkFullCommandSent(hd, hd44780_inst_set_ddram_l2());
+
+    INFO("Receive L2 and L4");
+    checkReceptionOfLines(hd, "1234567890ABCDFE", "EFCDBA0987654321", ROWLENACT*2);
 }
 
 int main( int argc, char* argv[] ) {
