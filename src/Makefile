@@ -37,6 +37,9 @@ run-dbg: ${TSRC_DTGT}
 test: ${TSRC_TGT}
 	cd ${TSRC_BIN} ; ./${TEST_TGT}
 
+test-v: ${TSRC_TGT}
+	cd ${TSRC_BIN} ; ./${TEST_TGT} -s
+
 test-dbg: ${TSRC_DTGT}
 	cd ${TSRC_DBIN} ; gdb ${TEST_TGT}
 
