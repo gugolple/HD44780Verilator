@@ -270,6 +270,7 @@ TEST_CASE("Initialization of HD44780") {
     const unsigned long long int initialHCycle = hd.getHCycles();
     const unsigned long long int targetHCycle = initialHCycle + MAX_COMMAND_WAIT_SENT;
     while(hd.getState().busy_reset) {
+        hd.nextHalfCycle();
         if(hd.getHCycles() >= targetHCycle) {
             timeoutError(hd, initialHCycle);
         }
