@@ -1,12 +1,12 @@
 .PHONY: run
 
-TGT = hd44780
+TGT = hd447804b
 TTGT = T${TGT}
 
 COMPILATION_PATH = obj_dir
 PVTGTLib = ${COMPILATION_PATH}/${VTGTLib}
 
-VERILATOR_EXTRA_OPTS = --top-module ${TGT} -Wno-INITIALDLY -Wno-UNUSED -Wno-UNDRIVEN 
+VERILATOR_EXTRA_OPTS = --top-module ${TGT} -Wno-INITIALDLY -Wno-UNUSED -Wno-UNDRIVEN -Wno-REDEFMACRO
 PATH_SRC = fpga_gowin_hd44780/src
 VERILOG_SRCS = $(wildcard ${PATH_SRC}/*.v)
 MEMS = $(wildcard ${PATH_SRC}/*.mem)
