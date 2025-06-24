@@ -32,7 +32,28 @@
 #define PERIOD_FHZ getPeriodOnBase(FHZ)
 #define PERIOD_HFHZ getPeriodOnBase(HFHZ)
 
-#define infoCommand(hd) INFO( "Command sent at cycle: " << hd.getCycles() << "\n" "- " << hd.getState().to_string() << "\n")
+unsigned long long int cycleToTime(unsigned long long int cycle) {
+    return cycle / FHZ;
+}
+
+unsigned long long int cycleToUS(unsigned long long int cycle) {
+    return cycleToTime(cycle * US);
+}
+
+unsigned long long int cycleToMS(unsigned long long int cycle) {
+    return cycleToTime(cycle * MS);
+}
+
+#define CYCLE_STAMP_STR(hd) " at cyle: " << hd.getCycles()
+#define TIME_STAMP_US_STR(hd) " at time: " << cycleToUS(hd.getCycles()) << "us"
+#define DUMP_STR_HD(hd) "- " << hd.getState().to_string() << "\n"
+#define COMMAND_DUMP_FULL_STR(hd) "Command sent" << CYCLE_STAMP_STR(hd) << TIME_STAMP_US_STR(hd) << "\n" DUMP_STR_HD(hd)
+#define infoCommand(hd) INFO(COMMAND_DUMP_FULL_STR(hd))
+#define forceInfoCommand(hd) WARN(COMMAND_DUMP_FULL_STR(hd))
+#define infoCommandHigh(hd) INFO( "High Command sent" << COMMAND_DUMP_FULL_STR(hd))
+#define infoCommandLow(hd) INFO( "Low Command sent" << COMMAND_DUMP_FULL_STR(hd))
+#define forceInfoCommandHigh(hd) WARN( "High Command sent" << COMMAND_DUMP_FULL_STR(hd))
+#define forceInfoCommandLow(hd) WARN( "Low Command sent" << COMMAND_DUMP_FULL_STR(hd))
 
 void failedCompareModelAndSimulation(bool b, HD44780State const &hd, 
     HD44780Payload const &pld, unsigned char payloadval) {
@@ -150,7 +171,7 @@ void timeoutError(WrapHD44780 const &hd, const unsigned long long int initial) {
     );
 }
 
-void waitUntilCommandSent(WrapHD44780 &hd) {
+void waitUntilEnableDrops(WrapHD44780 &hd) {
     const unsigned long long int initialHCycle = hd.getHCycles();
     const unsigned long long int targetHCycle = initialHCycle + MAX_COMMAND_WAIT_SENT;
     // E pin known to be high with the loop
@@ -235,13 +256,23 @@ void checkReceptionOfLines(WrapHD44780 &hd, const char *l1, const char *l2,
     receiveData(hd, combinedLines, offset);
 }
 
-void checkFullCommandSent(WrapHD44780 &hd, HD44780Payload const &pld) {
-    waitUntilCommandSent(hd);
+void checkHighHalfCommandSent(WrapHD44780 &hd, HD44780Payload const &pld) {
+    waitUntilEnableDrops(hd);
     infoCommand(hd);
     REQUIRE(compareModelAndSimulationHigh(hd.getState(), pld));
-    waitUntilCommandSent(hd);
+    infoCommandHigh(hd);
+}
+
+void checkLowHalfCommandSent(WrapHD44780 &hd, HD44780Payload const &pld) {
+    waitUntilEnableDrops(hd);
     infoCommand(hd);
     REQUIRE(compareModelAndSimulationLow(hd.getState(), pld));
+    infoCommandLow(hd);
+}
+
+void checkFullCommandSent(WrapHD44780 &hd, HD44780Payload const &pld) {
+    checkHighHalfCommandSent(hd, pld);
+    checkLowHalfCommandSent(hd, pld);
 }
 
 void initialReset(WrapHD44780 &hd) {
@@ -267,8 +298,7 @@ void resetSequence(WrapHD44780 &hd) {
 
     // Instruction function set for half, first time
     INFO("Function set 1");
-    waitUntilCommandSent(hd);
-    REQUIRE(compareModelAndSimulationHigh(hd.getState(), hd44780_inst_function_set_half()));
+    checkHighHalfCommandSent(hd, hd44780_inst_function_set_half());
 
     // Wait 10ms for a clear display 
     INFO("Function set 1 wait");
