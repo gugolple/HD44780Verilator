@@ -53,8 +53,8 @@
 #endif
 
 #define NROW 4
-#define ROWLEN 17
-#define ROWLENACT 16
+#define ROWLEN 21
+#define ROWLENACT 20
 
 /* 
  * All operations are:
