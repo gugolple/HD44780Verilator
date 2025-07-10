@@ -401,22 +401,22 @@ TEST_CASE("Initialization of HD44780", "[TRS]") {
     INFO("Receive set DDRAM address to L1");
     checkFullCommandSent(hd, hd44780_inst_set_ddram_l1());
     INFO("Receive L1");
-    checkReceptionOfLine(hd, "1234567890abcdfefghi", 0<<6);
+    checkReceptionOfLine(hd, "1234567890abcdfefghi", 0<<5);
     // Check the receptions of L2
     INFO("Receive set DDRAM address to L2");
     checkFullCommandSent(hd, hd44780_inst_set_ddram_l2());
     INFO("Receive L2");
-    checkReceptionOfLine(hd, "1234567890ABCDFEFGHI", 2<<6);
+    checkReceptionOfLine(hd, "1234567890ABCDFEFGHI", 1<<5);
     // Check the receptions of L3
     INFO("Receive set DDRAM address to L3");
     checkFullCommandSent(hd, hd44780_inst_set_ddram_l3());
     INFO("Receive L3");
-    checkReceptionOfLine(hd, "jklmnopqrstuvwxyz!([", 3<<6);
+    checkReceptionOfLine(hd, "jklmnopqrstuvwxyz!([", 2<<5);
     // Check the receptions of L4
     INFO("Receive set DDRAM address to L4");
     checkFullCommandSent(hd, hd44780_inst_set_ddram_l4());
     INFO("Receive L4");
-    checkReceptionOfLine(hd, "JKLMNOPQRSTUVWXYZ>)]", 4<<6);
+    checkReceptionOfLine(hd, "JKLMNOPQRSTUVWXYZ>)]", 3<<5);
 
 }
 
