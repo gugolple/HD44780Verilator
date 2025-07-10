@@ -180,14 +180,14 @@ void waitUntilEnableDrops(WrapHD44780 &hd) {
         if(hd.getHCycles() >= targetHCycle) {
             timeoutError(hd, initialHCycle);
         }
-    };
+    }
     INFO( "E is high at " << hd.getCycles() << "\n" );
     while (hd.getState().e) {
         hd.nextHalfCycle();
         if(hd.getHCycles() >= targetHCycle) {
             timeoutError(hd, initialHCycle);
         }
-    };
+    }
     INFO( "E is low at " << hd.getCycles() << "\n" );
 }
 
@@ -200,22 +200,30 @@ void waitUntilChange(WrapHD44780 &hd, HD44780State &initial) {
 }
 
 void receiveSingleData(WrapHD44780 &hd, const char *l, unsigned int pos,
-        const unsigned int offset) {
+    const unsigned int offset) {
     // Always give the requested value
     const unsigned long long int initialHCycle = hd.getHCycles();
     const unsigned long long int targetHCycle = initialHCycle + MAX_COMMAND_WAIT_SENT;
     // E pin known to be high with the loop
     REQUIRE(!hd.getState().e);
+    unsigned char addressReceived = 0;
     while (!hd.getState().e) {
-        // Every clock provide requested idata from idataaaddr
+        // When the flag of the "idataaddr is set" is active do the logic
+        // This is due to the internal logic doing the operation in several cycles
+        // within the "E low" state
+        if(hd.getState().idataaddr_rdy) {
+            REQUIRE(((unsigned int)hd.getState().idataaddr - offset) == pos);
+            hd.setidata(l[hd.getState().idataaddr - offset]);
+            addressReceived = 1;
+        }
         hd.nextHalfCycle();
         if(hd.getHCycles() >= targetHCycle) {
             timeoutError(hd, initialHCycle);
         }
-    };
+    }
+    // Force check that the idataaddr has been set
+    REQUIRE(addressReceived == 1);
     INFO( "E is high at " << hd.getCycles() << "\n" );
-    REQUIRE(((unsigned int)hd.getState().idataaddr - offset) == pos);
-    hd.setidata(l[hd.getState().idataaddr - offset]);
     // E and RS have to be high
     REQUIRE((hd.getState().e && hd.getState().rs));
     while (hd.getState().e) {
@@ -223,37 +231,27 @@ void receiveSingleData(WrapHD44780 &hd, const char *l, unsigned int pos,
         if(hd.getHCycles() >= targetHCycle) {
             timeoutError(hd, initialHCycle);
         }
-    };
+    }
     INFO( "E is low at " << hd.getCycles() << "\n" );
     REQUIRE((!hd.getState().e && hd.getState().rs));
 }
 
-// Offset for when lines L2 and L4 that start reading the buffer at 32
+// Offset is already precalculated, lineNumber << 6 + position
 void receiveData(WrapHD44780 &hd, const char *l, const unsigned int offset) {
-    for(int i=0; i<(ROWLENACT*2); i++) {
+    for(int i=0; i<(ROWLENACT); i++) {
         INFO("Character of sequence: " << l[i] << " number: " << i);
         receiveSingleData(hd, l, i, offset);
         const unsigned char high_bits = hd.getState().db; 
         receiveSingleData(hd, l, i, offset);
         const unsigned char low_bits = hd.getState().db; 
-        //const unsigned char actual_received = high_bits << 4 | low_bits;
         const unsigned char actual_received = high_bits << 4 | low_bits;
         REQUIRE((unsigned int)actual_received == (unsigned int)l[i]);
     }
 }
 
-void checkReceptionOfLines(WrapHD44780 &hd, const char *l1, const char *l2,
-        const unsigned int offset) {
-    char combinedLines[ROWLENACT*2+1];
-    for(int i=0; i<ROWLENACT; i++) {
-        combinedLines[i] = l1[i];
-    }
-    for(int i=0; i<ROWLENACT; i++) {
-        combinedLines[i+ROWLENACT] = l2[i];
-    }
-    // Force last value to be 0 to comply with C strings
-    combinedLines[ROWLENACT*2] = '\0';
-    receiveData(hd, combinedLines, offset);
+void checkReceptionOfLine(WrapHD44780 &hd, const char *l,
+    const unsigned int offset) {
+    receiveData(hd, l, offset);
 }
 
 void checkHighHalfCommandSent(WrapHD44780 &hd, HD44780Payload const &pld) {
@@ -398,18 +396,28 @@ TEST_CASE("Initialization of HD44780", "[TRS]") {
     // failure before
     REQUIRE(1);
 
-    // Check the receptions of L1 and L3
+    // Check the receptions of all the lines
+    // Check the receptions of L1
     INFO("Receive set DDRAM address to L1");
     checkFullCommandSent(hd, hd44780_inst_set_ddram_l1());
-
-    INFO("Receive L1 and L3");
-    checkReceptionOfLines(hd, "1234567890abcdfe", "efcdba0987654321", 0);
-
+    INFO("Receive L1");
+    checkReceptionOfLine(hd, "1234567890abcdfefghi", 0<<6);
+    // Check the receptions of L2
     INFO("Receive set DDRAM address to L2");
     checkFullCommandSent(hd, hd44780_inst_set_ddram_l2());
+    INFO("Receive L2");
+    checkReceptionOfLine(hd, "1234567890ABCDFEFGHI", 2<<6);
+    // Check the receptions of L3
+    INFO("Receive set DDRAM address to L3");
+    checkFullCommandSent(hd, hd44780_inst_set_ddram_l3());
+    INFO("Receive L3");
+    checkReceptionOfLine(hd, "jklmnopqrstuvwxyz!([", 3<<6);
+    // Check the receptions of L4
+    INFO("Receive set DDRAM address to L4");
+    checkFullCommandSent(hd, hd44780_inst_set_ddram_l4());
+    INFO("Receive L4");
+    checkReceptionOfLine(hd, "JKLMNOPQRSTUVWXYZ>)]", 4<<6);
 
-    INFO("Receive L2 and L4");
-    checkReceptionOfLines(hd, "1234567890ABCDFE", "EFCDBA0987654321", ROWLENACT*2);
 }
 
 int main( int argc, char* argv[] ) {

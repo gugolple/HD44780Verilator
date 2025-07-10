@@ -1,7 +1,9 @@
 #ifndef HD44780_HPP
 #define HD44780_HPP
-#include "Vhd44780.h"
+#include "Vhd447804b.h"
 #include "verilated.h"
+
+typedef Vhd447804b Vhd44780;
 
 struct HD44780State {
     unsigned char clk;
@@ -14,6 +16,7 @@ struct HD44780State {
     unsigned char rs;
     unsigned char db;
     unsigned char idataaddr;
+    unsigned char idataaddr_rdy;
     unsigned char idata;
 
     bool operator== (const HD44780State& o) const;

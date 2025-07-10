@@ -40,6 +40,9 @@ std::string HD44780State::to_string() const {
     ss << " RS: " << (unsigned int)rs;
     ss << " DB (h): " << std::hex << (unsigned int)db;
     ss << " DB (b): " << std::bitset<4>((unsigned int)db);
+    ss << " IData: " << std::bitset<8>((unsigned int)idata);
+    ss << " IDataAddr: " << (unsigned int)idataaddr;
+    ss << " IDataAddrRdy: " << (unsigned int)idataaddr_rdy;
     return ss.str();
 }
 
@@ -57,14 +60,7 @@ WrapHD44780::WrapHD44780(VerilatedContext& vc) : hd44780(Vhd44780{&vc}) {
 std::string WrapHD44780::to_string() {
     std::stringstream ss;
     ss << "Cycle: " << cycle;
-    ss << " Rst: " << (unsigned int)hd44780.rst;
-    ss << " Clk: " << (unsigned int)hd44780.clk;
-    ss << " Trg: " << (unsigned int)hd44780.trg;
-    ss << " Busy: " << (unsigned int)hd44780.busy;
-    ss << " E: " << (unsigned int)hd44780.e;
-    ss << " RS: " << (unsigned int)hd44780.rs;
-    ss << " DB (h): " << std::hex << (unsigned int)hd44780.db;
-    ss << " DB (b): " << std::bitset<4>((unsigned int)hd44780.db);
+    ss << getState().to_string();
     return ss.str();
 }
 
@@ -122,6 +118,7 @@ HD44780State WrapHD44780::getState() const {
         .rs = hd44780.rs,
         .db = hd44780.db,
         .idataaddr = hd44780.idataaddr,
+        .idataaddr_rdy = hd44780.idataaddr_rdy,
         .idata = hd44780.idata,
     };
 }
