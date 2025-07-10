@@ -1,7 +1,7 @@
 #include <iostream>
 #include <config.h>
 
-#include "Vhd44780.h"
+#include "Vhd447804b.h"
 #include "verilated.h"
 #ifndef HD44780_HPP
 #include "HD44780.hpp"
