@@ -313,17 +313,8 @@ void resetSequence(WrapHD44780 &hd) {
     INFO("Function set 2 wait");
     old = hd.getState();
     maintainStateHalfs(hd, convertMilliSecondsToHalfCycleCount(HD44780_INST_CLEAR_DISPLAY_MS), old);
-
-    // Execute clear display command
-    INFO("Clear display");
-    checkFullCommandSent(hd,  hd44780_inst_display_clear());
-
-    // Wait 10ms for a clear display 
-    INFO("Clear display wait");
-    old = hd.getState();
-    maintainStateHalfs(hd, convertMilliSecondsToHalfCycleCount(HD44780_INST_CLEAR_DISPLAY_MS), old);
-
     // Execute display control command
+
     INFO("Display control");
     checkFullCommandSent(hd,  hd44780_inst_display_control(
         HD44780_CONFIG_D_DISPLAY_ONOFF,
@@ -347,6 +338,15 @@ void resetSequence(WrapHD44780 &hd) {
     INFO("Entry mode wait");
     old = hd.getState();
     maintainStateHalfs(hd, convertMicroSecondsToHalfCycleCount(HD44780_INST_DELAY_US), old);
+
+    // Execute clear display command
+    INFO("Clear display");
+    checkFullCommandSent(hd,  hd44780_inst_display_clear());
+
+    // Wait 10ms for a clear display 
+    INFO("Clear display wait");
+    old = hd.getState();
+    maintainStateHalfs(hd, convertMilliSecondsToHalfCycleCount(HD44780_INST_CLEAR_DISPLAY_MS), old);
 
     // Confirm that at some point later the busy_reset flag is set to 0
     // indicating the process has been completed
