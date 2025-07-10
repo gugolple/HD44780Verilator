@@ -10,6 +10,8 @@ PVTGTLib = ${COMPILATION_PATH}/${VTGTLib}
 VERILATOR_EXTRA_OPTS1 = --top-module ${TGT} -Wno-INITIALDLY -Wno-UNUSED
 VERILATOR_EXTRA_OPTS2 = ${VERILATOR_EXTRA_OPTS1} -Wno-UNDRIVEN -Wno-REDEFMACRO
 VERILATOR_EXTRA_OPTS = ${VERILATOR_EXTRA_OPTS2} -Wno-PINMISSING
+
+VERILATOR_CUSTOM_OVERRIDES = -CFLAGS '-I../test_srcs/verilator_overrides -DVL_VERILATED_INCLUDE="<custom_overrides.h>" -DVL_PRINTF=my_printf'
 PATH_SRC = fpga_gowin_hd44780/src
 VERILOG_SRCS = $(wildcard ${PATH_SRC}/*.v)
 MEMS = $(wildcard ${PATH_SRC}/*.mem)
@@ -71,7 +73,7 @@ ${TSRC_DBIN}/%.mem: ${PATH_SRC}/%.mem
 	cp $< $@
 
 ${PVTGTLib}: ${VERILOG_SRCS}
-	verilator -Wall --cc ${VERILOG_SRCS} ${VERILATOR_EXTRA_OPTS} -lib-create ${TTGT} 
+	verilator -Wall --cc ${VERILOG_SRCS} ${VERILATOR_EXTRA_OPTS} -lib-create ${TTGT} ${VERILATOR_CUSTOM_OVERRIDES} 
 	make -C ${COMPILATION_PATH} -j -f V${TGT}.mk
 
 .PHONY: ${TSRC_MAKE}

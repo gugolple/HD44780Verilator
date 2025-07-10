@@ -1,12 +1,18 @@
+GLOBAL_CFLAGS = \
+    -Wall \
+    -Wextra \
+    -std=c++20
+
 if DEBUG
-AM_CFLAGS = -Og -Wall -Wextra -g3 -ggdb
-AM_CXXFLAGS = -Og -Wall -Wextra -g3 -ggdb
+AM_CFLAGS = -Og  -g3 -ggdb $(GLOBAL_CFLAGS)
+AM_CXXFLAGS = -Og -g3 -ggdb $(GLOBAL_CFLAGS)
 else
-AM_CFLAGS =  -Os -Wall -Wextra
-AM_CXXFLAGS = -Os -Wall -Wextra
+AM_CFLAGS =  -Os $(GLOBAL_CFLAGS)
+AM_CXXFLAGS = -Os $(GLOBAL_CFLAGS)
 endif
 
 INCLUDE_DIRS = \
+        -I$(srcdir)/verilator_overrides/ \
 	-I$(srcdir)/../obj_dir/ \
 	-I/usr/share/verilator/include/ \
 	-I/usr/local/share/verilator/include/
@@ -29,6 +35,15 @@ LIBGENFLAGS = \
 	-Wno-unused-parameter \
 	$(INCLUDE_DIRS)
 
+catch2LDADD = \
+	-lCatch2Main \
+	-lCatch2
+
+LIBGENLDADD = \
+	$(srcdir)/../obj_dir/libT$(TGT).a \
+	$(catch2LDADD) \
+	libgen.a
+
 libgen_a_CPPFLAGS = \
 	$(LIBGENFLAGS)
 
@@ -43,28 +58,23 @@ vtesthd44780_CPPFLAGS = \
 	$(LIBGENFLAGS)
 
 vtesthd44780_LDADD = \
-	$(srcdir)/../obj_dir/libT$(TGT).a \
-	libgen.a
+	$(LIBGENLDADD)
 
 vtesthd44780_SOURCES = \
+        $(srcdir)/verilator_overrides/custom_overrides.cpp \
 	$(srcdir)/src/sim_main.cpp
 
 ################################################################################
 # Unit test target 
 ################################################################################
-catch2LDADD = \
-	-lCatch2Main \
-	-lCatch2
-
 testmain_CPPFLAGS = \
 	$(LIBGENFLAGS)
 
 testmain_LDADD = \
-	$(srcdir)/../obj_dir/libT$(TGT).a \
-	$(catch2LDADD) \
-	libgen.a
+	$(LIBGENLDADD)
 
 testmain_SOURCES = \
+        $(srcdir)/verilator_overrides/custom_overrides.cpp \
 	$(srcdir)/src/testmain.cpp
 
 dist_doc_DATA = README
