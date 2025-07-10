@@ -39,8 +39,8 @@
 
 #define HD44780_START_ADD_L1          (0x00) 
 #define HD44780_START_ADD_L2          (0x40)
-#define HD44780_START_ADD_L3          (0x10) 
-#define HD44780_START_ADD_L4          (0x50)
+#define HD44780_START_ADD_L3          (HD44780_START_ADD_L1+ROWLENACT) 
+#define HD44780_START_ADD_L4          (HD44780_START_ADD_L2+ROWLENACT)
 
 // Pins assigned for the HD44780 interface
 // Only 4 high used if set to 4 bit mode at HD44780_MODE
