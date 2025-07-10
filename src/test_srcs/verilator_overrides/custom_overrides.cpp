@@ -5,34 +5,38 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdarg.h>
+#include <assert.h>
 
 #include <fmt/format.h>
 #include <string>
 #include <sstream>
+#include <memory>
 
 // Catch2 to do the mixing
 #include <catch2/catch_session.hpp>
 #include <catch2/catch_test_macros.hpp>
 
-void my_catch2_print( const char * format, ...) {
-    // Buffer
-    std::array<char, 1024> formatted;
-    // Open variadic macros
-    va_list args;
-    va_start(args, format);
-    // Do conversion from variadic to string
-    vsnprintf(formatted.data(), formatted.size(), format, args);
-    // Close variadic macros
-    va_end(args);
-    UNSCOPED_INFO(std::string(formatted.data()));
-}
- 
-
+// Thanks to the beautiful people at stack overflow
+// https://stackoverflow.com/questions/55424746/is-there-an-analogous-function-to-vsnprintf-that-works-with-stdstring
 int my_printf( const char * format, ... ) {
-    int result = 0;
-    va_list args;
+    // Buffer
+    std::string result;
+    va_list args, args_copy;
+
+    // Open variadic macros
     va_start(args, format);
-    result = vprintf(format, args);
+    va_copy(args_copy, args);
+
+    // Do conversion from variadic to string
+    const int len = vsnprintf(nullptr, 0, format, args);
+    assert(len>0); // Sanity check, force only positives
+    result.resize(len);
+    vsnprintf(&result[0], len+1, format, args_copy);
+
+    // Close variadic macros
+    va_end(args_copy);
     va_end(args);
-    return result;
+
+    // Enjoy the result
+    UNSCOPED_INFO(std::move(result));
 }
