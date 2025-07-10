@@ -1,6 +1,7 @@
 .PHONY: run
 
 TGT = hd447804b
+export TGT
 TTGT = T${TGT}
 
 COMPILATION_PATH = obj_dir
@@ -18,7 +19,7 @@ TSRC_BIN = ${TSRC}/bin
 TSRC_DBIN = ${TSRC}/dbin
 TSRC_MAKE = ${TSRC_BIN}/Makefile
 TSRC_DMAKE = ${TSRC_DBIN}/Makefile
-RUN_TGT = vtesthd44780
+RUN_TGT = vtest${TGT}
 TRUN_TGT = ${TSRC_BIN}/${RUN_TGT}
 TRUN_DTGT = ${TSRC_DBIN}/${RUN_TGT}
 TEST_TGT = testmain
@@ -33,7 +34,9 @@ all: ${PVTGTLib} ${RUN_TGT}
 run: ${TRUN_TGT}
 	cd ${TSRC_BIN} ; ./${RUN_TGT}
 
-run-dbg: ${TSRC_DTGT}
+run-g: ${TSRC_DTGT}
+
+run-dbg: run-g 
 	cd ${TSRC_DBIN} ; gdb ${RUN_TGT}
 
 test: ${TSRC_TGT}
@@ -42,7 +45,9 @@ test: ${TSRC_TGT}
 test-v: ${TSRC_TGT}
 	cd ${TSRC_BIN} ; ./${TEST_TGT} -s
 
-test-dbg: ${TSRC_DTGT}
+test-g: ${TSRC_DTGT}
+
+test-gdb: test-g
 	cd ${TSRC_DBIN} ; gdb ${TEST_TGT}
 
 .PHONY: clean

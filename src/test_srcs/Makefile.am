@@ -43,7 +43,7 @@ vtesthd44780_CPPFLAGS = \
 	$(LIBGENFLAGS)
 
 vtesthd44780_LDADD = \
-	$(srcdir)/../obj_dir/libThd44780.a \
+	$(srcdir)/../obj_dir/libT$(TGT).a \
 	libgen.a
 
 vtesthd44780_SOURCES = \
@@ -60,7 +60,7 @@ testmain_CPPFLAGS = \
 	$(LIBGENFLAGS)
 
 testmain_LDADD = \
-	$(srcdir)/../obj_dir/libThd44780.a \
+	$(srcdir)/../obj_dir/libT$(TGT).a \
 	$(catch2LDADD) \
 	libgen.a
 
