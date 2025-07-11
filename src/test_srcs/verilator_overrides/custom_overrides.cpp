@@ -11,6 +11,7 @@
 #include <string>
 #include <sstream>
 #include <memory>
+#include <iostream>
 
 // Catch2 to do the mixing
 #include <catch2/catch_session.hpp>
@@ -18,6 +19,7 @@
 
 // Thanks to the beautiful people at stack overflow
 // https://stackoverflow.com/questions/55424746/is-there-an-analogous-function-to-vsnprintf-that-works-with-stdstring
+// https://stackoverflow.com/questions/56331128/call-to-snprintf-and-vsnprintf-inside-a-variadic-function
 int my_printf( const char * format, ... ) {
     // Buffer
     std::string result;
@@ -27,16 +29,19 @@ int my_printf( const char * format, ... ) {
     va_start(args, format);
     va_copy(args_copy, args);
 
-    // Do conversion from variadic to string
-    const int len = vsnprintf(nullptr, 0, format, args);
-    assert(len>0); // Sanity check, force only positives
-    result.resize(len);
-    vsnprintf(&result[0], len+1, format, args_copy);
-
-    // Close variadic macros
+    size_t size = vsnprintf(nullptr, 0, format, args) + 1; 
+    assert(size>0); // Sanity check, force only positives
     va_end(args_copy);
+
+    // Format the string
+    char *szBuff = new char[size];
+    vsnprintf(szBuff, size, format, args);
     va_end(args);
 
+
+    std::cout << szBuff << std::endl;
+
     // Enjoy the result
-    UNSCOPED_INFO(std::move(result));
+    //UNSCOPED_INFO(szBuff);
+    delete[] szBuff;
 }
