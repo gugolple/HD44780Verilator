@@ -27,6 +27,9 @@ AM_CONDITIONAL(DEBUG, test x"$debug" = x"true")
 # Get Verilog target name fron environment
 AC_SUBST(TGT, ${TGT})
 
+CFLAGS=""
+CXXFLAGS=""
+
 AC_PROG_CC
 AC_PROG_CXX
 AM_PROG_AR
